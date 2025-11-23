@@ -34,6 +34,8 @@ function App() {
       correctAnswerTexts,
       isCorrect,
       isMultipleChoice: currentQuestion.isMultipleChoice,
+      options: currentQuestion.options,
+      explanation: currentQuestion.explanation,
     };
 
     setUserAnswers((prev) => new Map(prev).set(currentQuestion.id, result));
@@ -83,6 +85,8 @@ function App() {
         correctAnswerTexts,
         isCorrect: false,
         isMultipleChoice: q.isMultipleChoice,
+        options: q.options,
+        explanation: q.explanation,
       };
     });
 

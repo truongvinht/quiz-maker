@@ -113,47 +113,70 @@ export default function QuizSummary({ summary, onRestart }: QuizSummaryProps) {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <div>
-                  <p className="text-sm font-semibold text-muted-foreground mb-2">
-                    Your answer:
-                  </p>
-                  {result.userAnswerTexts.length > 0 ? (
-                    <div className="space-y-1">
-                      {result.userAnswerTexts.map((answerText, idx) => (
-                        <p
-                          key={idx}
-                          className={`text-sm pl-4 border-l-4 py-1 ${
-                            result.isCorrect
-                              ? 'border-l-green-500 bg-green-50 text-green-900'
-                              : 'border-l-red-500 bg-red-50 text-red-900'
-                          }`}
-                        >
-                          {answerText}
-                        </p>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-sm text-gray-500 italic">No answer provided</p>
-                  )}
-                </div>
-                {!result.isCorrect && (
+              <CardContent className="space-y-4">
+                {result.isCorrect ? (
                   <div>
-                    <p className="text-sm font-semibold text-green-600 mb-2">
-                      Correct answer:
+                    <p className="text-sm font-semibold text-muted-foreground mb-2">
+                      Your answer:
                     </p>
-                    <div className="space-y-1">
-                      {result.correctAnswerTexts.map((answerText, idx) => (
-                        <p
-                          key={idx}
-                          className="text-sm pl-4 border-l-4 border-l-green-500 bg-green-50 text-green-900 py-1"
-                        >
-                          {answerText}
-                        </p>
-                      ))}
+                    {result.userAnswerTexts.length > 0 ? (
+                      <div className="space-y-1">
+                        {result.userAnswerTexts.map((answerText, idx) => (
+                          <p
+                            key={idx}
+                            className="text-sm pl-4 border-l-4 py-1 border-l-green-500 bg-green-50 text-green-900"
+                          >
+                            {answerText}
+                          </p>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-500 italic">No answer provided</p>
+                    )}
+                  </div>
+                ) : (
+                  <div>
+                    <p className="text-sm font-semibold text-muted-foreground mb-2">
+                      Answer options:
+                    </p>
+                    <div className="space-y-2">
+                      {result.options.map((option) => {
+                        const isUserAnswer = result.userAnswers.includes(option.id);
+                        const isCorrectAnswer = result.correctAnswers.includes(option.id);
+
+                        let className = 'text-sm pl-4 border-l-4 py-2 rounded';
+                        if (isCorrectAnswer) {
+                          className += ' border-l-green-500 bg-green-50 text-green-900 font-semibold';
+                        } else if (isUserAnswer) {
+                          className += ' border-l-red-500 bg-red-50 text-red-900';
+                        } else {
+                          className += ' border-l-gray-300 bg-gray-50 text-gray-700';
+                        }
+
+                        return (
+                          <div key={option.id} className={className}>
+                            {option.text}
+                            {isCorrectAnswer && <span className="ml-2 text-green-700">✓ Correct</span>}
+                            {isUserAnswer && !isCorrectAnswer && <span className="ml-2 text-red-700">✗ Your answer</span>}
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
+
+                {/* Explanation section */}
+                <div className="pt-2 border-t">
+                  <p className="text-sm font-semibold text-primary mb-2 flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                    </svg>
+                    Explanation:
+                  </p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {result.explanation}
+                  </p>
+                </div>
               </CardContent>
             </Card>
           ))}

@@ -29,6 +29,8 @@ export interface QuizResult {
   correctAnswerTexts: string[]; // Correct option texts for display
   isCorrect: boolean;
   isMultipleChoice: boolean;
+  options: QuizOption[]; // All options in order for summary display
+  explanation: string; // Explanation for the answer
 }
 
 export interface QuizSummary {
