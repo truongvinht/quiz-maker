@@ -39,9 +39,9 @@ export default function AnswerOption({
       }
     }
 
-    // Hover and cursor with enhanced interactions
+    // Cursor states
     if (!disabled) {
-      className += ' cursor-pointer hover:border-selected hover:shadow-lg hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] focus-within:ring-2 focus-within:ring-selected focus-within:ring-opacity-50';
+      className += ' cursor-pointer';
     } else {
       className += ' cursor-not-allowed opacity-90';
     }
