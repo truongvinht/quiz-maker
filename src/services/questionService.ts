@@ -1,12 +1,12 @@
 import type { Question } from '../types/quiz';
-import questionsData from '../data/questions.json';
 import { shuffleArray } from '../utils/shuffleArray';
 
 /**
- * Load questions from JSON and randomize their order
+ * Load questions from a specific topic file and randomize their order
  */
-export function loadQuestions(): Question[] {
-  return shuffleArray(questionsData as Question[]);
+export async function loadQuestions(fileName: string): Promise<Question[]> {
+  const questionsData = await import(`../data/${fileName}`);
+  return shuffleArray(questionsData.default as Question[]);
 }
 
 /**
@@ -25,7 +25,7 @@ export function randomizeAnswerOptions(question: Question): Question {
 /**
  * Load and prepare questions with randomized question order and answer options
  */
-export function loadRandomizedQuiz(): Question[] {
-  const questions = loadQuestions();
+export async function loadRandomizedQuiz(fileName: string): Promise<Question[]> {
+  const questions = await loadQuestions(fileName);
   return questions.map(randomizeAnswerOptions);
 }

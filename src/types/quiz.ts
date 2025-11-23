@@ -40,3 +40,12 @@ export interface QuizSummary {
   score: number; // Percentage
   results: QuizResult[];
 }
+
+export interface QuizTopic {
+  id: string;
+  name: string;
+  description: string;
+  fileName: string;
+  questionCount: number;
+  icon?: string;
+}

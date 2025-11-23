@@ -1,17 +1,30 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import QuestionCard from './components/QuestionCard';
 import QuizSummary from './components/QuizSummary';
+import TopicSelection from './components/TopicSelection';
 import { loadRandomizedQuiz } from './services/questionService';
+import { quizTopics } from './data/topics';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import type { QuizResult, QuizSummary as QuizSummaryType } from './types/quiz';
+import type { QuizResult, QuizSummary as QuizSummaryType, Question, QuizTopic } from './types/quiz';
 
 function App() {
-  // Load and randomize questions once when component mounts
-  const questions = useMemo(() => loadRandomizedQuiz(), []);
+  const [selectedTopic, setSelectedTopic] = useState<QuizTopic | null>(null);
+  const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<Map<string, QuizResult>>(new Map());
   const [quizCompleted, setQuizCompleted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Load questions when a topic is selected
+  useEffect(() => {
+    if (selectedTopic) {
+      setIsLoading(true);
+      loadRandomizedQuiz(selectedTopic.fileName)
+        .then(setQuestions)
+        .finally(() => setIsLoading(false));
+    }
+  }, [selectedTopic]);
 
   const currentQuestion = questions[currentQuestionIndex];
   const totalQuestions = questions.length;
@@ -60,8 +73,12 @@ function App() {
     setCurrentQuestionIndex(0);
     setUserAnswers(new Map());
     setQuizCompleted(false);
-    // Reload and randomize questions
-    window.location.reload();
+    setSelectedTopic(null);
+    setQuestions([]);
+  };
+
+  const handleTopicSelect = (topic: QuizTopic) => {
+    setSelectedTopic(topic);
   };
 
   const generateSummary = (): QuizSummaryType => {
@@ -103,6 +120,42 @@ function App() {
     };
   };
 
+  // Show topic selection if no topic is selected
+  if (!selectedTopic) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
+        <main className="flex-1 py-6 px-4">
+          <TopicSelection topics={quizTopics} onTopicSelect={handleTopicSelect} />
+        </main>
+        <footer className="bg-white py-3 px-4 text-center text-gray-600 text-xs border-t-2 border-gray-200 shadow-inner">
+          <p className="m-0 font-medium">Built with React + TypeScript + Vite + Tailwind CSS</p>
+        </footer>
+      </div>
+    );
+  }
+
+  // Show loading state while questions are being loaded
+  if (isLoading || questions.length === 0) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
+        <header className="bg-primary py-4 px-6 text-center shadow-xl">
+          <h1 className="text-2xl md:text-3xl font-extrabold m-0 tracking-tight text-primary-foreground">
+            Quiz Maker
+          </h1>
+          <p className="mt-1 text-sm m-0 font-medium text-primary-foreground/90">
+            {selectedTopic.name}
+          </p>
+        </header>
+        <main className="flex-1 py-6 px-4 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-lg text-muted-foreground">Loading questions...</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   if (quizCompleted) {
     return (
       <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
@@ -111,7 +164,7 @@ function App() {
             Quiz Maker
           </h1>
           <p className="mt-1 text-sm m-0 font-medium text-primary-foreground/90">
-            Practice Multiple Choice Questions
+            {selectedTopic.name}
           </p>
         </header>
 
@@ -130,7 +183,7 @@ function App() {
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
       <header className="bg-primary py-4 px-6 text-center shadow-xl">
         <h1 className="text-2xl md:text-3xl font-extrabold m-0 tracking-tight text-primary-foreground">Quiz Maker</h1>
-        <p className="mt-1 text-sm m-0 font-medium text-primary-foreground/90">Practice Multiple Choice Questions</p>
+        <p className="mt-1 text-sm m-0 font-medium text-primary-foreground/90">{selectedTopic.name}</p>
       </header>
 
       <main className="flex-1 py-6 px-4 max-w-6xl w-full mx-auto">
