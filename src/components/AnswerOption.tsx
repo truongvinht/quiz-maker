@@ -23,17 +23,19 @@ export default function AnswerOption({
     // Base state with shadow
     className += ' border-gray-200 bg-white shadow-sm';
 
-    // Selected state
+    // Selected state (before submission)
     if (isSelected && !disabled) {
       className += ' border-selected bg-selected-light shadow-md ring-2 ring-selected ring-opacity-20';
     }
 
-    // Correct/Incorrect states (after submission)
+    // After submission states
     if (disabled && isCorrect !== null) {
       if (isCorrect) {
-        className += ' border-correct bg-correct-light shadow-md ring-2 ring-correct ring-opacity-30';
-      } else if (isSelected && !isCorrect) {
-        className += ' border-incorrect bg-incorrect-light shadow-md ring-2 ring-incorrect ring-opacity-30';
+        // This is a correct answer - always show green
+        className += ' border-green-500 bg-green-50 shadow-md ring-2 ring-green-500 ring-opacity-30';
+      } else if (isSelected) {
+        // This was selected but is incorrect - show red
+        className += ' border-red-500 bg-red-50 shadow-md ring-2 ring-red-500 ring-opacity-30';
       }
     }
 

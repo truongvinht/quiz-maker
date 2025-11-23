@@ -64,10 +64,10 @@ export default function QuestionCard({
     selectedOptions.length === question.correctAnswers.length &&
     selectedOptions.every((id) => question.correctAnswers.includes(id));
 
-  const getCorrectAnswerLabels = () => {
+  const getCorrectAnswerTexts = () => {
     return question.options
       .filter((opt) => question.correctAnswers.includes(opt.id))
-      .map((opt) => opt.label);
+      .map((opt) => opt.text);
   };
 
   const selectionProgress = (selectedOptions.length / question.options.length) * 100;
@@ -135,27 +135,16 @@ export default function QuestionCard({
               {selectedOptions.length === 0 ? 'Select an answer' : 'Check Answer →'}
             </Button>
           ) : (
-            <div className="flex gap-3 flex-1">
+            onNext && (
               <Button
                 size="default"
-                variant="secondary"
                 className="flex-1 sm:flex-none h-9 transition-all hover:scale-105"
-                onClick={handleReset}
-                aria-label="Try this question again"
+                onClick={onNext}
+                aria-label={isLastQuestion ? "View Results" : "Next Question"}
               >
-                ↻ Try Again
+                {isLastQuestion ? '📊 View Results' : 'Next Question →'}
               </Button>
-              {onNext && (
-                <Button
-                  size="default"
-                  className="flex-1 sm:flex-none h-9 transition-all hover:scale-105"
-                  onClick={onNext}
-                  aria-label={isLastQuestion ? "View Results" : "Next Question"}
-                >
-                  {isLastQuestion ? '📊 View Results' : 'Next Question →'}
-                </Button>
-              )}
-            </div>
+            )
           )}
         </div>
 
@@ -164,7 +153,7 @@ export default function QuestionCard({
           <ResultPanel
             isCorrect={isCorrect}
             explanation={question.explanation}
-            correctAnswers={getCorrectAnswerLabels()}
+            correctAnswers={getCorrectAnswerTexts()}
           />
         )}
       </CardContent>
