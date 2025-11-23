@@ -17,31 +17,19 @@ export default function ResultPanel({ isCorrect, explanation, correctAnswers }: 
       role="alert"
       aria-live="polite"
     >
-      <CardHeader>
-        <div className="flex items-center gap-4">
-          <div
-            className={`flex items-center justify-center w-14 h-14 rounded-full shadow-md ${
-              isCorrect ? 'bg-green-600' : 'bg-red-600'
-            } animate-in zoom-in duration-500`}
-          >
-            <span className="text-3xl font-bold text-white">
-              {isCorrect ? '✓' : '✗'}
-            </span>
-          </div>
-          <CardTitle className="text-2xl md:text-3xl">
-            {isCorrect ? '🎉 Correct!' : '📚 Incorrect'}
-          </CardTitle>
-        </div>
-      </CardHeader>
-
-      <CardContent className="space-y-5">
+      <CardContent className="space-y-5 pt-6">
         <Card className={`p-4 border-2 ${
           isCorrect ? 'bg-background border-correct' : 'bg-background border-incorrect'
         }`}>
-          <p className="m-0 text-lg font-semibold">
-            Correct answer{correctAnswers.length > 1 ? 's' : ''}:{' '}
-            <span className={`${isCorrect ? 'text-correct' : 'text-incorrect'} font-bold text-xl`}>
-              {correctAnswers.join(', ')}
+          <p className="m-0 text-base font-semibold flex items-center gap-2">
+            <span className={`text-2xl ${isCorrect ? 'text-green-600' : 'text-red-600'}`}>
+              {isCorrect ? '✓' : '✗'}
+            </span>
+            <span>
+              Correct answer{correctAnswers.length > 1 ? 's' : ''}:{' '}
+              <span className={`${isCorrect ? 'text-correct' : 'text-incorrect'} font-bold`}>
+                {correctAnswers.join(', ')}
+              </span>
             </span>
           </p>
         </Card>
