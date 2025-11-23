@@ -1,4 +1,4 @@
-import type { Question, QuizOption } from '../types/quiz';
+import type { Question } from '../types/quiz';
 import questionsData from '../data/questions.json';
 import { shuffleArray } from '../utils/shuffleArray';
 

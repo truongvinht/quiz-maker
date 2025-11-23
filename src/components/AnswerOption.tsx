@@ -72,8 +72,7 @@ export default function AnswerOption({
         className="mr-4 mt-1 w-5 h-5 flex-shrink-0 cursor-pointer disabled:cursor-not-allowed accent-selected"
         aria-hidden="true"
       />
-      <label className="flex items-start cursor-pointer w-full gap-3 pointer-events-none">
-        <span className="font-bold text-lg text-gray-800 min-w-[28px]">{option.label}.</span>
+      <label className="flex items-start cursor-pointer w-full pointer-events-none">
         <span className="text-gray-900 leading-relaxed flex-1 text-base">{option.text}</span>
       </label>
     </div>

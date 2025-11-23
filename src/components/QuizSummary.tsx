@@ -1,0 +1,164 @@
+import type { QuizSummary as QuizSummaryType } from '../types/quiz';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+
+interface QuizSummaryProps {
+  summary: QuizSummaryType;
+  onRestart: () => void;
+}
+
+export default function QuizSummary({ summary, onRestart }: QuizSummaryProps) {
+  const { correctAnswers, incorrectAnswers, score, results } = summary;
+
+  const getScoreColor = () => {
+    if (score >= 80) return 'text-green-600';
+    if (score >= 60) return 'text-yellow-600';
+    return 'text-red-600';
+  };
+
+  const getScoreBgColor = () => {
+    if (score >= 80) return 'bg-green-50 border-green-200';
+    if (score >= 60) return 'bg-yellow-50 border-yellow-200';
+    return 'bg-red-50 border-red-200';
+  };
+
+  const getPerformanceMessage = () => {
+    if (score === 100) return '🎉 Perfect Score! Outstanding!';
+    if (score >= 80) return '🌟 Excellent Work!';
+    if (score >= 60) return '👍 Good Job!';
+    return '📚 Keep Practicing!';
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto space-y-6">
+      {/* Score Card */}
+      <Card className={`border-4 ${getScoreBgColor()} animate-in fade-in duration-700`}>
+        <CardHeader className="text-center">
+          <CardTitle className="text-4xl md:text-5xl font-extrabold mb-4">
+            Quiz Complete!
+          </CardTitle>
+          <div className="space-y-4">
+            <div>
+              <p className="text-6xl md:text-7xl font-extrabold mb-2">
+                <span className={getScoreColor()}>{Math.round(score)}%</span>
+              </p>
+              <p className="text-2xl font-semibold text-muted-foreground">
+                {getPerformanceMessage()}
+              </p>
+            </div>
+            <div className="flex justify-center gap-6 text-lg">
+              <div className="flex items-center gap-2">
+                <span className="text-green-600 font-bold text-2xl">✓</span>
+                <span className="font-semibold">{correctAnswers} Correct</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-red-600 font-bold text-2xl">✗</span>
+                <span className="font-semibold">{incorrectAnswers} Incorrect</span>
+              </div>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="text-center">
+          <Button
+            size="lg"
+            onClick={onRestart}
+            className="hover:scale-105 transition-all"
+          >
+            🔄 Start New Quiz
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Detailed Results */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-2xl">Question Review</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {results.map((result, index) => (
+            <Card
+              key={result.questionId}
+              className={`border-l-4 ${
+                result.isCorrect
+                  ? 'border-l-green-500 bg-green-50/50'
+                  : 'border-l-red-500 bg-red-50/50'
+              }`}
+            >
+              <CardHeader>
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <Badge variant="secondary" className="text-sm">
+                        Question {index + 1}
+                      </Badge>
+                      {result.isMultipleChoice && (
+                        <Badge variant="outline" className="text-xs">
+                          Multiple Choice
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-base font-medium text-foreground">
+                      {result.questionText}
+                    </p>
+                  </div>
+                  <div
+                    className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
+                      result.isCorrect ? 'bg-green-600' : 'bg-red-600'
+                    }`}
+                  >
+                    <span className="text-2xl font-bold text-white">
+                      {result.isCorrect ? '✓' : '✗'}
+                    </span>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div>
+                  <p className="text-sm font-semibold text-muted-foreground mb-2">
+                    Your answer:
+                  </p>
+                  {result.userAnswerTexts.length > 0 ? (
+                    <div className="space-y-1">
+                      {result.userAnswerTexts.map((answerText, idx) => (
+                        <p
+                          key={idx}
+                          className={`text-sm pl-4 border-l-4 py-1 ${
+                            result.isCorrect
+                              ? 'border-l-green-500 bg-green-50 text-green-900'
+                              : 'border-l-red-500 bg-red-50 text-red-900'
+                          }`}
+                        >
+                          {answerText}
+                        </p>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500 italic">No answer provided</p>
+                  )}
+                </div>
+                {!result.isCorrect && (
+                  <div>
+                    <p className="text-sm font-semibold text-green-600 mb-2">
+                      Correct answer:
+                    </p>
+                    <div className="space-y-1">
+                      {result.correctAnswerTexts.map((answerText, idx) => (
+                        <p
+                          key={idx}
+                          className="text-sm pl-4 border-l-4 border-l-green-500 bg-green-50 text-green-900 py-1"
+                        >
+                          {answerText}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

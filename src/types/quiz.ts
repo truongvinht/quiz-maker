@@ -19,3 +19,22 @@ export interface UserAnswer {
   isCorrect: boolean;
   submitted: boolean;
 }
+
+export interface QuizResult {
+  questionId: string;
+  questionText: string;
+  userAnswers: string[]; // Selected option IDs
+  userAnswerTexts: string[]; // Selected option texts for display
+  correctAnswers: string[]; // Correct option IDs
+  correctAnswerTexts: string[]; // Correct option texts for display
+  isCorrect: boolean;
+  isMultipleChoice: boolean;
+}
+
+export interface QuizSummary {
+  totalQuestions: number;
+  correctAnswers: number;
+  incorrectAnswers: number;
+  score: number; // Percentage
+  results: QuizResult[];
+}

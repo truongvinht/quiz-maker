@@ -1,20 +1,50 @@
 import { useState, useMemo } from 'react';
 import QuestionCard from './components/QuestionCard';
+import QuizSummary from './components/QuizSummary';
 import { loadRandomizedQuiz } from './services/questionService';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import type { QuizResult, QuizSummary as QuizSummaryType } from './types/quiz';
 
 function App() {
   // Load and randomize questions once when component mounts
   const questions = useMemo(() => loadRandomizedQuiz(), []);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [userAnswers, setUserAnswers] = useState<Map<string, QuizResult>>(new Map());
+  const [quizCompleted, setQuizCompleted] = useState(false);
 
   const currentQuestion = questions[currentQuestionIndex];
   const totalQuestions = questions.length;
 
+  const handleAnswerSubmit = (selectedOptions: string[], isCorrect: boolean) => {
+    // Get answer texts for display
+    const userAnswerTexts = selectedOptions.map(
+      (id) => currentQuestion.options.find((opt) => opt.id === id)?.text || ''
+    );
+    const correctAnswerTexts = currentQuestion.correctAnswers.map(
+      (id) => currentQuestion.options.find((opt) => opt.id === id)?.text || ''
+    );
+
+    const result: QuizResult = {
+      questionId: currentQuestion.id,
+      questionText: currentQuestion.text,
+      userAnswers: selectedOptions,
+      userAnswerTexts,
+      correctAnswers: currentQuestion.correctAnswers,
+      correctAnswerTexts,
+      isCorrect,
+      isMultipleChoice: currentQuestion.isMultipleChoice,
+    };
+
+    setUserAnswers((prev) => new Map(prev).set(currentQuestion.id, result));
+  };
+
   const handleNext = () => {
     if (currentQuestionIndex < totalQuestions - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
+    } else {
+      // Quiz completed - show summary
+      setQuizCompleted(true);
     }
   };
 
@@ -23,6 +53,74 @@ function App() {
       setCurrentQuestionIndex(currentQuestionIndex - 1);
     }
   };
+
+  const handleRestart = () => {
+    setCurrentQuestionIndex(0);
+    setUserAnswers(new Map());
+    setQuizCompleted(false);
+    // Reload and randomize questions
+    window.location.reload();
+  };
+
+  const generateSummary = (): QuizSummaryType => {
+    const results = questions.map((q) => {
+      const answer = userAnswers.get(q.id);
+      if (answer) {
+        return answer;
+      }
+
+      // No answer submitted - create default result with answer texts
+      const correctAnswerTexts = q.correctAnswers.map(
+        (id) => q.options.find((opt) => opt.id === id)?.text || ''
+      );
+
+      return {
+        questionId: q.id,
+        questionText: q.text,
+        userAnswers: [],
+        userAnswerTexts: [],
+        correctAnswers: q.correctAnswers,
+        correctAnswerTexts,
+        isCorrect: false,
+        isMultipleChoice: q.isMultipleChoice,
+      };
+    });
+
+    const correctAnswers = results.filter((r) => r.isCorrect).length;
+    const incorrectAnswers = totalQuestions - correctAnswers;
+    const score = (correctAnswers / totalQuestions) * 100;
+
+    return {
+      totalQuestions,
+      correctAnswers,
+      incorrectAnswers,
+      score,
+      results,
+    };
+  };
+
+  if (quizCompleted) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
+        <header className="bg-primary py-4 px-6 text-center shadow-xl">
+          <h1 className="text-2xl md:text-3xl font-extrabold m-0 tracking-tight text-primary-foreground">
+            Quiz Maker
+          </h1>
+          <p className="mt-1 text-sm m-0 font-medium text-primary-foreground/90">
+            Practice Multiple Choice Questions
+          </p>
+        </header>
+
+        <main className="flex-1 py-6 px-4 max-w-6xl w-full mx-auto">
+          <QuizSummary summary={generateSummary()} onRestart={handleRestart} />
+        </main>
+
+        <footer className="bg-white py-3 px-4 text-center text-gray-600 text-xs border-t-2 border-gray-200 shadow-inner">
+          <p className="m-0 font-medium">Built with React + TypeScript + Vite + Tailwind CSS</p>
+        </footer>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
@@ -58,12 +156,14 @@ function App() {
           </div>
         </div>
 
-        <QuestionCard key={currentQuestion.id} question={currentQuestion} />
+        <QuestionCard
+          key={currentQuestion.id}
+          question={currentQuestion}
+          onAnswerSubmit={handleAnswerSubmit}
+          onNext={handleNext}
+          isLastQuestion={currentQuestionIndex === totalQuestions - 1}
+        />
       </main>
-
-      <footer className="bg-white py-3 px-4 text-center text-gray-600 text-xs border-t-2 border-gray-200 shadow-inner">
-        <p className="m-0 font-medium">Built with React + TypeScript + Vite + Tailwind CSS</p>
-      </footer>
     </div>
   );
 }

@@ -9,9 +9,17 @@ import { Progress } from '@/components/ui/progress';
 
 interface QuestionCardProps {
   question: Question;
+  onAnswerSubmit?: (selectedOptions: string[], isCorrect: boolean) => void;
+  onNext?: () => void;
+  isLastQuestion?: boolean;
 }
 
-export default function QuestionCard({ question }: QuestionCardProps) {
+export default function QuestionCard({
+  question,
+  onAnswerSubmit,
+  onNext,
+  isLastQuestion = false
+}: QuestionCardProps) {
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [submitted, setSubmitted] = useState(false);
 
@@ -34,6 +42,16 @@ export default function QuestionCard({ question }: QuestionCardProps) {
   const handleSubmit = () => {
     if (selectedOptions.length === 0) return;
     setSubmitted(true);
+
+    // Calculate if answer is correct
+    const correct =
+      selectedOptions.length === question.correctAnswers.length &&
+      selectedOptions.every((id) => question.correctAnswers.includes(id));
+
+    // Notify parent component
+    if (onAnswerSubmit) {
+      onAnswerSubmit(selectedOptions, correct);
+    }
   };
 
   const handleReset = () => {
@@ -83,7 +101,7 @@ export default function QuestionCard({ question }: QuestionCardProps) {
         </h2>
       </CardHeader>
 
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-4">
         {/* Options */}
         <div className="space-y-3">
           {question.options.map((option) => {
@@ -105,11 +123,11 @@ export default function QuestionCard({ question }: QuestionCardProps) {
         </div>
 
         {/* Action buttons */}
-        <div className="flex gap-4">
+        <div className="flex gap-3">
           {!submitted ? (
             <Button
-              size="lg"
-              className="flex-1 sm:flex-none hover:shadow-xl transition-all"
+              size="default"
+              className="flex-1 sm:flex-none h-9 hover:shadow-xl transition-all"
               onClick={handleSubmit}
               disabled={selectedOptions.length === 0}
               aria-label="Submit your answer"
@@ -117,15 +135,27 @@ export default function QuestionCard({ question }: QuestionCardProps) {
               {selectedOptions.length === 0 ? 'Select an answer' : 'Check Answer →'}
             </Button>
           ) : (
-            <Button
-              size="lg"
-              variant="secondary"
-              className="flex-1 sm:flex-none transition-all hover:scale-105"
-              onClick={handleReset}
-              aria-label="Try this question again"
-            >
-              ↻ Try Again
-            </Button>
+            <div className="flex gap-3 flex-1">
+              <Button
+                size="default"
+                variant="secondary"
+                className="flex-1 sm:flex-none h-9 transition-all hover:scale-105"
+                onClick={handleReset}
+                aria-label="Try this question again"
+              >
+                ↻ Try Again
+              </Button>
+              {onNext && (
+                <Button
+                  size="default"
+                  className="flex-1 sm:flex-none h-9 transition-all hover:scale-105"
+                  onClick={onNext}
+                  aria-label={isLastQuestion ? "View Results" : "Next Question"}
+                >
+                  {isLastQuestion ? '📊 View Results' : 'Next Question →'}
+                </Button>
+              )}
+            </div>
           )}
         </div>
 
