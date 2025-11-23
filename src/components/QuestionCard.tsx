@@ -96,7 +96,7 @@ export default function QuestionCard({
         </div>
 
         {/* Question text */}
-        <h2 className="text-2xl md:text-3xl font-bold text-foreground leading-relaxed">
+        <h2 className="text-lg md:text-xl font-bold text-foreground leading-relaxed">
           {question.text}
         </h2>
       </CardHeader>
