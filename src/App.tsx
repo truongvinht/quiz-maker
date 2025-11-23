@@ -1,14 +1,16 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import QuestionCard from './components/QuestionCard';
-import { sampleQuestions } from './data/sampleQuestions';
+import { loadRandomizedQuiz } from './services/questionService';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
 function App() {
+  // Load and randomize questions once when component mounts
+  const questions = useMemo(() => loadRandomizedQuiz(), []);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
-  const currentQuestion = sampleQuestions[currentQuestionIndex];
-  const totalQuestions = sampleQuestions.length;
+  const currentQuestion = questions[currentQuestionIndex];
+  const totalQuestions = questions.length;
 
   const handleNext = () => {
     if (currentQuestionIndex < totalQuestions - 1) {
