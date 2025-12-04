@@ -90,5 +90,54 @@
     "correctAnswers": ["b"],
     "explanation": "Amazon CloudWatch is a monitoring and observability service that collects metrics, logs, and events from AWS resources and applications. It helps you monitor performance, set alarms, and gain insights into resource utilization. Option A describes S3/storage services, option C describes IAM, and option D describes services like ECS or EKS.",
     "isMultipleChoice": false
+  },
+  {
+    "id": "4",
+    "text": "A developer wants to deploy a web application to AWS. Select and order the correct steps from the following list to deploy the application following AWS best practices. Each step should be selected one time.",
+    "questionType": "ordering",
+    "steps": [
+      {
+        "stepNumber": 1,
+        "options": [
+          "Deploy application code",
+          "Set up monitoring and logging",
+          "Configure security groups and IAM roles",
+          "Test the application"
+        ],
+        "correctAnswer": "Configure security groups and IAM roles"
+      },
+      {
+        "stepNumber": 2,
+        "options": [
+          "Deploy application code",
+          "Set up monitoring and logging",
+          "Configure security groups and IAM roles",
+          "Test the application"
+        ],
+        "correctAnswer": "Deploy application code"
+      },
+      {
+        "stepNumber": 3,
+        "options": [
+          "Deploy application code",
+          "Set up monitoring and logging",
+          "Configure security groups and IAM roles",
+          "Test the application"
+        ],
+        "correctAnswer": "Set up monitoring and logging"
+      },
+      {
+        "stepNumber": 4,
+        "options": [
+          "Deploy application code",
+          "Set up monitoring and logging",
+          "Configure security groups and IAM roles",
+          "Test the application"
+        ],
+        "correctAnswer": "Test the application"
+      }
+    ],
+    "explanation": "The correct deployment sequence follows AWS best practices: (1) Configure security groups and IAM roles - Security should be configured first to establish proper access controls and network boundaries before deploying any resources. This includes setting up IAM roles with least-privilege permissions and configuring security groups to control inbound/outbound traffic. (2) Deploy application code - Once security is in place, deploy the application code to AWS services like EC2, Lambda, or Elastic Beanstalk. This could involve uploading code to S3, deploying to EC2 instances, or pushing container images to ECR. (3) Set up monitoring and logging - After deployment, configure CloudWatch for monitoring metrics, logs, and alarms to track application performance and detect issues. This includes setting up CloudWatch Logs, metrics, and alarms for key performance indicators. (4) Test the application - Finally, perform comprehensive testing including functional tests, load tests, and security tests to verify the application works correctly in the AWS environment. Testing should validate that all components integrate properly and the application meets performance and security requirements. This sequence ensures security-first deployment, proper observability, and thorough validation before releasing to users.",
+    "isMultipleChoice": false
   }
 ]

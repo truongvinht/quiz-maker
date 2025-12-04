@@ -7,9 +7,10 @@ import { Badge } from '@/components/ui/badge';
 interface QuizSummaryProps {
   summary: QuizSummaryType;
   onRestart: () => void;
+  elapsedTime: string;
 }
 
-export default function QuizSummary({ summary, onRestart }: QuizSummaryProps) {
+export default function QuizSummary({ summary, onRestart, elapsedTime }: QuizSummaryProps) {
   const { correctAnswers, incorrectAnswers, score, results } = summary;
   const [expandedQuestions, setExpandedQuestions] = useState<Set<string>>(new Set());
 
@@ -61,14 +62,18 @@ export default function QuizSummary({ summary, onRestart }: QuizSummaryProps) {
                 {getPerformanceMessage()}
               </p>
             </div>
-            <div className="flex justify-center gap-6 text-lg">
-              <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 text-lg">
+              <div className="flex items-center gap-2 justify-center">
                 <span className="text-green-600 font-bold text-2xl">✓</span>
                 <span className="font-semibold">{correctAnswers} Correct</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 justify-center">
                 <span className="text-red-600 font-bold text-2xl">✗</span>
                 <span className="font-semibold">{incorrectAnswers} Incorrect</span>
+              </div>
+              <div className="flex items-center gap-2 justify-center">
+                <span className="text-primary font-bold text-2xl">⏱️</span>
+                <span className="font-semibold font-mono">{elapsedTime}</span>
               </div>
             </div>
           </div>
@@ -79,7 +84,7 @@ export default function QuizSummary({ summary, onRestart }: QuizSummaryProps) {
             onClick={onRestart}
             className="hover:scale-105 transition-all"
           >
-            🔄 Start New Quiz
+            ← Back to Topics
           </Button>
         </CardContent>
       </Card>
