@@ -4,18 +4,34 @@ export interface QuizOption {
   text: string;
 }
 
+export interface OrderingStep {
+  stepNumber: number;
+  options: string[];
+  correctAnswer: string;
+}
+
+export interface MatchingScenario {
+  id: number;
+  text: string;
+  correctAnswer: string;
+}
+
 export interface Question {
   id: string;
   text: string;
-  options: QuizOption[];
-  correctAnswers: string[]; // Array of option IDs
+  questionType?: 'standard' | 'ordering' | 'matching'; // Optional, defaults to 'standard'
+  options?: QuizOption[]; // For standard questions
+  correctAnswers?: string[]; // For standard questions - array of option IDs
+  steps?: OrderingStep[]; // For ordering questions
+  scenarios?: MatchingScenario[]; // For matching questions
+  matchingOptions?: string[]; // For matching questions - shared dropdown options
   explanation: string;
   isMultipleChoice: boolean; // true = checkboxes, false = radio buttons
 }
 
 export interface UserAnswer {
   questionId: string;
-  selectedOptions: string[]; // Array of selected option IDs
+  selectedOptions: string[] | Map<number, string>; // Array for standard, Map for ordering
   isCorrect: boolean;
   submitted: boolean;
 }
