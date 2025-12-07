@@ -1,15 +1,27 @@
 # Quiz Maker
 
-A modern, interactive quiz application built with React, TypeScript, and Tailwind CSS. Features randomized questions and answers, comprehensive explanations, and a polished UI with collapsible results.
+A modern, interactive quiz application built with React, TypeScript, and Tailwind CSS. Features topic-based quizzes, multiple question types, customizable quiz ranges, and comprehensive explanations with a polished UI.
 
 ## Features
 
+### Core Features
+- **Topic-Based Quizzes**: Select from multiple quiz topics, each with its own question bank
+- **Quiz Configuration**: Choose your starting question and number of questions to practice
+- **Multiple Question Types**:
+  - **Standard Multiple Choice**: Single or multiple correct answers with radio buttons or checkboxes
+  - **Ordering Questions**: Arrange steps in the correct sequence using dropdown selections
+  - **Matching Questions**: Match scenarios with corresponding answers
 - **Randomized Questions**: Questions are shuffled on each quiz attempt for a fresh experience
-- **Randomized Answer Options**: Answer choices are randomized to prevent pattern memorization
+- **Randomized Answer Options**: Answer choices are randomized to prevent pattern memorization (standard questions only)
+- **Quiz Timer**: Track your time with an HH:MM:SS timer displayed in the header
+- **Progress Tracking**: Visual indicators showing current question position and quiz progress
+
+### User Experience
 - **Interactive UI**: Clean, modern interface with visual feedback for correct/incorrect answers
 - **Comprehensive Explanations**: Detailed explanations for each question with context about why answers are correct or incorrect
 - **Collapsible Quiz Summary**: Review all questions with expandable/collapsible details and explanations
-- **Progress Tracking**: Visual indicators showing selection progress and quiz completion
+- **Time Tracking**: View total elapsed time in the final summary
+- **Flexible Navigation**: Navigate between questions, skip around, or go back to review
 - **Responsive Design**: Fully responsive layout that works on desktop and mobile devices
 - **Accessibility**: WCAG-compliant with proper ARIA labels and keyboard navigation
 
@@ -27,25 +39,32 @@ A modern, interactive quiz application built with React, TypeScript, and Tailwin
 ```
 src/
 ├── components/
-│   ├── ui/                 # shadcn/ui components
+│   ├── ui/                      # shadcn/ui components
 │   │   ├── badge.tsx
 │   │   ├── button.tsx
 │   │   ├── card.tsx
 │   │   └── progress.tsx
-│   ├── AnswerOption.tsx    # Individual answer choice component
-│   ├── QuestionCard.tsx    # Single question display with options
-│   ├── ResultPanel.tsx     # Feedback panel after answering
-│   └── QuizSummary.tsx     # Final results with collapsible review
+│   ├── AnswerOption.tsx         # Individual answer choice (radio/checkbox)
+│   ├── QuestionCard.tsx         # Main question display with routing logic
+│   ├── ResultPanel.tsx          # Feedback panel after answering
+│   ├── QuizSummary.tsx          # Final results with collapsible review
+│   ├── TopicSelection.tsx       # Topic selection screen
+│   ├── QuizConfiguration.tsx    # Quiz configuration (start/count)
+│   ├── OrderingQuestion.tsx     # Ordering question type component
+│   └── MatchingQuestion.tsx     # Matching question type component
 ├── data/
-│   └── questions.json      # Quiz questions database (33 questions)
+│   ├── topics.ts                # Quiz topics metadata
+│   └── [topic].json             # Individual topic question banks
 ├── services/
-│   └── questionService.ts  # Question loading and randomization logic
+│   └── questionService.ts       # Question loading and randomization
+├── hooks/
+│   └── useTimer.ts              # Quiz timer hook (HH:MM:SS)
 ├── types/
-│   └── quiz.ts            # TypeScript type definitions
+│   └── quiz.ts                  # TypeScript type definitions
 ├── utils/
-│   └── shuffleArray.ts    # Fisher-Yates shuffle algorithm
-├── App.tsx                # Main application component
-└── main.tsx              # Application entry point
+│   └── shuffleArray.ts          # Fisher-Yates shuffle algorithm
+├── App.tsx                      # Main application with routing
+└── main.tsx                     # Application entry point
 ```
 
 ## Getting Started
@@ -91,30 +110,57 @@ npm run preview
 
 ## How It Works
 
+### Application Flow
+
+1. **Topic Selection**: Choose a quiz topic from the available topics
+2. **Quiz Configuration**:
+   - Select starting question number (1 to N)
+   - Choose number of questions to practice
+   - Preview quiz range (e.g., Q15 → Q45)
+3. **Quiz Session**:
+   - Timer starts automatically when quiz begins
+   - Answer questions with instant visual feedback
+   - Navigate freely between questions
+   - Submit answers and see explanations
+4. **Summary Screen**:
+   - View final score and elapsed time
+   - Review all questions with collapsible details
+   - See correct answers and explanations
+
+### Question Types
+
+#### Standard Multiple Choice
+- Single answer (radio buttons) or multiple answers (checkboxes)
+- Answer options are randomized
+- Visual feedback with green (correct) and red (incorrect) highlighting
+
+#### Ordering Questions
+- Arrange steps in correct sequence using dropdown menus
+- Each step has a dropdown with available options
+- No randomization - preserves original order for context
+
+#### Matching Questions
+- Match scenarios with corresponding answers
+- Each scenario has a dropdown with all possible answers
+- Validate all matches together
+
 ### Question Randomization
 
 The application uses the Fisher-Yates shuffle algorithm to randomize:
 1. **Question Order**: Questions are shuffled when the quiz loads
-2. **Answer Options**: Each question's answer choices are randomized independently
-3. **Fresh Experience**: Each quiz attempt presents questions in a different order
-
-### Quiz Flow
-
-1. **Start**: User sees the first randomized question
-2. **Answer Selection**: User selects one or more answers (depending on question type)
-3. **Submission**: User submits answer and sees immediate feedback
-4. **Explanation**: Detailed explanation shows why the answer is correct/incorrect
-5. **Next Question**: Progress to the next question
-6. **Summary**: Final results screen with score and collapsible question review
+2. **Answer Options**: Standard question options are randomized independently
+3. **Smart Randomization**: Ordering and matching questions skip randomization to preserve context
 
 ### Data Structure
 
-Questions are stored in `src/data/questions.json` with the following structure:
+Questions are stored in topic-specific JSON files (e.g., `src/data/aws-basics.json`):
 
+#### Standard Question
 ```json
 {
   "id": "1",
   "text": "Question text here",
+  "questionType": "standard",
   "options": [
     { "id": "a", "label": "A", "text": "Option A text" },
     { "id": "b", "label": "B", "text": "Option B text" }
@@ -125,13 +171,73 @@ Questions are stored in `src/data/questions.json` with the following structure:
 }
 ```
 
+#### Ordering Question
+```json
+{
+  "id": "2",
+  "text": "Arrange these steps in order",
+  "questionType": "ordering",
+  "steps": [
+    {
+      "stepNumber": 1,
+      "options": ["Option 1", "Option 2", "Option 3"],
+      "correctAnswer": "Option 1"
+    }
+  ],
+  "explanation": "Detailed explanation",
+  "isMultipleChoice": false
+}
+```
+
+#### Matching Question
+```json
+{
+  "id": "3",
+  "text": "Match each scenario with the correct answer",
+  "questionType": "matching",
+  "scenarios": [
+    {
+      "id": 1,
+      "text": "Scenario description",
+      "correctAnswer": "Answer A"
+    }
+  ],
+  "matchingOptions": ["Answer A", "Answer B", "Answer C"],
+  "explanation": "Detailed explanation",
+  "isMultipleChoice": false
+}
+```
+
 ## Customization
 
-### Adding Questions
+### Adding New Topics
 
-Add new questions to `src/data/questions.json` following the schema above. The quiz automatically supports:
-- Single-choice questions (`isMultipleChoice: false`)
-- Multiple-choice questions (`isMultipleChoice: true`)
+1. **Create a topic JSON file** in `src/data/` (e.g., `my-topic.json`)
+2. **Add questions** following one of the question type schemas above
+3. **Register the topic** in `src/data/topics.ts`:
+
+```typescript
+export const quizTopics: QuizTopic[] = [
+  {
+    id: "my-topic",
+    name: "My Topic Name",
+    description: "Topic description here",
+    fileName: "my-topic.json",
+    questionCount: 25, // Total number of questions
+    icon: "📚", // Optional emoji icon
+  },
+  // ... other topics
+];
+```
+
+### Adding Questions to Existing Topics
+
+Add questions to any topic JSON file following the appropriate schema:
+- **Standard questions**: Single or multiple choice with `questionType: "standard"`
+- **Ordering questions**: Step sequencing with `questionType: "ordering"`
+- **Matching questions**: Scenario matching with `questionType: "matching"`
+
+The quiz automatically detects question types and renders the appropriate UI.
 
 ### Styling
 
@@ -144,17 +250,19 @@ The application uses Tailwind CSS for styling. Key customization points:
 ### UI Components
 
 Built with shadcn/ui components for consistency:
-- **Card**: Question containers and results
-- **Button**: Navigation and actions
-- **Badge**: Question type indicators
+- **Card**: Question containers, topic selection, quiz configuration
+- **Button**: Navigation, actions, and topic selection
+- **Badge**: Question counters, quiz range indicators
 - **Progress**: Selection progress bars
 
 ## Performance Features
 
 - **Optimized Rendering**: React components optimized to prevent unnecessary re-renders
-- **Type Safety**: Full TypeScript coverage for reliability
+- **Type Safety**: Full TypeScript coverage for reliability and IntelliSense
 - **Fast Refresh**: Vite HMR for instant development feedback
 - **Code Splitting**: Automatic code splitting for optimal load times
+- **Dynamic Imports**: Question data loaded on-demand per topic
+- **State Management**: Efficient state updates with React hooks (useState, useEffect, custom hooks)
 
 ## Browser Support
 
@@ -176,8 +284,38 @@ Built with shadcn/ui components for consistency:
 
 - **ESLint**: Configured with React and TypeScript rules
 - **TypeScript**: Strict mode enabled for type safety
-- **Component Structure**: Modular, reusable components
-- **State Management**: React hooks for local state
+- **Component Structure**: Modular, reusable components with clear separation of concerns
+- **State Management**: React hooks (useState, useEffect) and custom hooks (useTimer)
+- **Type Definitions**: Comprehensive TypeScript interfaces for all data structures
+- **Smart Routing**: QuestionCard component intelligently routes to appropriate question type components
+
+## Architecture Highlights
+
+### Multi-Screen Flow
+The application implements a clean multi-screen flow:
+1. **TopicSelection** → Choose your quiz topic
+2. **QuizConfiguration** → Configure question range and count
+3. **Quiz Session** → Answer questions with timer and navigation
+4. **QuizSummary** → Review results with collapsible details
+
+### Question Type Extensibility
+The `QuestionCard` component acts as a smart router that delegates to specialized components based on `questionType`:
+- **StandardQuestion** (default) → Rendered inline in QuestionCard
+- **OrderingQuestion** → Dropdown-based step sequencing
+- **MatchingQuestion** → Scenario-to-answer matching
+
+This architecture makes it easy to add new question types without modifying core quiz logic.
+
+### Custom Hooks
+- **useTimer**: Manages quiz timer with start/pause/reset functionality and HH:MM:SS formatting
+- Extensible hook pattern for additional features (e.g., useProgress, useQuizState)
+
+### Configuration-Driven Design
+Quiz configuration is flexible and user-controlled:
+- Select any starting question (1 to N)
+- Choose any number of questions within available range
+- Dynamic validation prevents invalid configurations
+- Real-time preview of quiz range (e.g., Q15 → Q45)
 
 ## License
 
