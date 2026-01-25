@@ -2,13 +2,13 @@ import { useState, useEffect } from 'react';
 import QuestionCard from './components/QuestionCard';
 import QuizSummary from './components/QuizSummary';
 import TopicSelection from './components/TopicSelection';
-import QuizConfiguration, { type QuizConfig } from './components/QuizConfiguration';
+import QuizConfiguration from './components/QuizConfiguration';
 import { loadRandomizedQuiz } from './services/questionService';
 import { quizTopics } from './data/topics';
 import { useTimer } from './hooks/useTimer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import type { QuizResult, QuizSummary as QuizSummaryType, Question, QuizTopic } from './types/quiz';
+import type { QuizResult, QuizSummary as QuizSummaryType, Question, QuizTopic, QuizConfig, QuizMode } from './types/quiz';
 
 function App() {
   const [selectedTopic, setSelectedTopic] = useState<QuizTopic | null>(null);
@@ -19,13 +19,18 @@ function App() {
   const [quizCompleted, setQuizCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [quizStarted, setQuizStarted] = useState(false);
+  const [quizMode, setQuizMode] = useState<QuizMode>('training');
+  const [selectedAnswers, setSelectedAnswers] = useState<Map<string, string[] | Map<number, string>>>(new Map());
 
   const { formattedTime, reset: resetTimer } = useTimer(quizStarted && !quizCompleted);
 
   // Load questions when quiz configuration is complete
   useEffect(() => {
     if (selectedTopic && quizConfig) {
+      // Valid use of setState in effect - initializing quiz state from configuration
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsLoading(true);
+      setQuizMode(quizConfig.mode); // Set quiz mode from configuration
       loadRandomizedQuiz(
         selectedTopic.fileName,
         quizConfig.startQuestion,
@@ -43,6 +48,13 @@ function App() {
   const totalQuestions = questions.length;
 
   const handleAnswerSubmit = (selectedOptions: string[] | Map<number, string>, isCorrect: boolean) => {
+    // In exam mode, just store the selection without validation
+    if (quizMode === 'exam') {
+      setSelectedAnswers((prev) => new Map(prev).set(currentQuestion.id, selectedOptions));
+      return;
+    }
+
+    // Training mode: immediate validation and feedback
     const isOrderingQuestion = currentQuestion.questionType === 'ordering';
 
     let userAnswerTexts: string[];
@@ -54,7 +66,7 @@ function App() {
       const answerMap = selectedOptions as Map<number, string>;
       userAnswersArray = Array.from(answerMap.entries())
         .sort((a, b) => a[0] - b[0])
-        .map(([_, value]) => value);
+        .map(([, value]) => value);
 
       userAnswerTexts = userAnswersArray.map((answer, index) => `Step ${index + 1}: ${answer}`);
       correctAnswerTexts = currentQuestion.steps?.map((step) =>
@@ -89,12 +101,126 @@ function App() {
     setUserAnswers((prev) => new Map(prev).set(currentQuestion.id, result));
   };
 
+  const handleExamSubmit = () => {
+    // Validate all answers and populate userAnswers Map
+    const validatedAnswers = new Map<string, QuizResult>();
+
+    questions.forEach((question) => {
+      const selectedAnswer = selectedAnswers.get(question.id);
+      const isOrderingQuestion = question.questionType === 'ordering';
+      const isMatchingQuestion = question.questionType === 'matching';
+
+      let userAnswersArray: string[];
+      let userAnswerTexts: string[];
+      let correctAnswerTexts: string[];
+      let isCorrect = false;
+
+      if (!selectedAnswer) {
+        // No answer provided
+        if (isOrderingQuestion) {
+          correctAnswerTexts = question.steps?.map((step) =>
+            `Step ${step.stepNumber}: ${step.correctAnswer}`
+          ) || [];
+        } else if (isMatchingQuestion) {
+          correctAnswerTexts = question.scenarios?.map((scenario) =>
+            `Scenario ${scenario.id}: ${scenario.correctAnswer}`
+          ) || [];
+        } else {
+          correctAnswerTexts = (question.correctAnswers || []).map(
+            (id) => question.options?.find((opt) => opt.id === id)?.text || ''
+          );
+        }
+
+        validatedAnswers.set(question.id, {
+          questionId: question.id,
+          questionText: question.text,
+          userAnswers: [],
+          userAnswerTexts: [],
+          correctAnswers: question.correctAnswers || [],
+          correctAnswerTexts,
+          isCorrect: false,
+          isMultipleChoice: question.isMultipleChoice,
+          options: question.options || [],
+          explanation: question.explanation,
+        });
+        return;
+      }
+
+      if (isOrderingQuestion) {
+        const answerMap = selectedAnswer as Map<number, string>;
+        userAnswersArray = Array.from(answerMap.entries())
+          .sort((a, b) => a[0] - b[0])
+          .map(([, value]) => value);
+
+        userAnswerTexts = userAnswersArray.map((answer, index) => `Step ${index + 1}: ${answer}`);
+        correctAnswerTexts = question.steps?.map((step) =>
+          `Step ${step.stepNumber}: ${step.correctAnswer}`
+        ) || [];
+
+        // Check if ordering is correct
+        isCorrect = question.steps?.every((step, index) =>
+          userAnswersArray[index] === step.correctAnswer
+        ) || false;
+      } else if (isMatchingQuestion) {
+        const answerMap = selectedAnswer as Map<number, string>;
+        userAnswersArray = Array.from(answerMap.entries())
+          .sort((a, b) => a[0] - b[0])
+          .map(([, value]) => value);
+
+        userAnswerTexts = userAnswersArray.map((answer, index) => `Scenario ${index + 1}: ${answer}`);
+        correctAnswerTexts = question.scenarios?.map((scenario) =>
+          `Scenario ${scenario.id}: ${scenario.correctAnswer}`
+        ) || [];
+
+        // Check if matching is correct
+        isCorrect = question.scenarios?.every((scenario, index) =>
+          userAnswersArray[index] === scenario.correctAnswer
+        ) || false;
+      } else {
+        const optionsArray = selectedAnswer as string[];
+        userAnswersArray = optionsArray;
+
+        userAnswerTexts = optionsArray.map(
+          (id) => question.options?.find((opt) => opt.id === id)?.text || ''
+        );
+        correctAnswerTexts = (question.correctAnswers || []).map(
+          (id) => question.options?.find((opt) => opt.id === id)?.text || ''
+        );
+
+        // Check if answer is correct
+        isCorrect =
+          optionsArray.length === (question.correctAnswers?.length || 0) &&
+          optionsArray.every((id) => question.correctAnswers?.includes(id));
+      }
+
+      validatedAnswers.set(question.id, {
+        questionId: question.id,
+        questionText: question.text,
+        userAnswers: userAnswersArray,
+        userAnswerTexts,
+        correctAnswers: question.correctAnswers || [],
+        correctAnswerTexts,
+        isCorrect,
+        isMultipleChoice: question.isMultipleChoice,
+        options: question.options || [],
+        explanation: question.explanation,
+      });
+    });
+
+    setUserAnswers(validatedAnswers);
+    setQuizCompleted(true);
+  };
+
   const handleNext = () => {
     if (currentQuestionIndex < totalQuestions - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
-      // Quiz completed - show summary
-      setQuizCompleted(true);
+      // Quiz completed
+      if (quizMode === 'exam') {
+        handleExamSubmit();
+      } else {
+        setQuizCompleted(true);
+      }
     }
   };
 
@@ -107,11 +233,13 @@ function App() {
   const handleRestart = () => {
     setCurrentQuestionIndex(0);
     setUserAnswers(new Map());
+    setSelectedAnswers(new Map());
     setQuizCompleted(false);
     setSelectedTopic(null);
     setQuizConfig(null);
     setQuestions([]);
     setQuizStarted(false);
+    setQuizMode('training');
     resetTimer();
   };
 
@@ -204,11 +332,11 @@ function App() {
   if (isLoading || questions.length === 0) {
     return (
       <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
-        <header className="bg-primary py-4 px-6 text-center shadow-xl">
+        <header className="bg-primary py-2 px-6 text-center shadow-xl">
           <h1 className="text-2xl md:text-3xl font-extrabold m-0 tracking-tight text-primary-foreground">
             Quiz Maker
           </h1>
-          <p className="mt-1 text-sm m-0 font-medium text-primary-foreground/90">
+          <p className="mt-0 text-sm m-0 font-medium text-primary-foreground/90">
             {selectedTopic.name}
           </p>
         </header>
@@ -225,11 +353,11 @@ function App() {
   if (quizCompleted) {
     return (
       <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
-        <header className="bg-primary py-4 px-6 text-center shadow-xl">
+        <header className="bg-primary py-2 px-6 text-center shadow-xl">
           <h1 className="text-2xl md:text-3xl font-extrabold m-0 tracking-tight text-primary-foreground">
             Quiz Maker
           </h1>
-          <p className="mt-1 text-sm m-0 font-medium text-primary-foreground/90">
+          <p className="mt-0 text-sm m-0 font-medium text-primary-foreground/90">
             {selectedTopic.name}
           </p>
         </header>
@@ -247,10 +375,10 @@ function App() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
-      <header className="bg-primary py-4 px-6 text-center shadow-xl">
+      <header className="bg-primary py-2 px-6 text-center shadow-xl">
         <h1 className="text-2xl md:text-3xl font-extrabold m-0 tracking-tight text-primary-foreground">Quiz Maker</h1>
-        <p className="mt-1 text-sm m-0 font-medium text-primary-foreground/90">{selectedTopic.name}</p>
-        <p className="mt-2 text-lg m-0 font-mono font-bold text-primary-foreground">⏱️ {formattedTime}</p>
+        <p className="mt-0 text-sm m-0 font-medium text-primary-foreground/90">{selectedTopic.name}</p>
+        <p className="mt-0.5 text-base m-0 font-mono font-bold text-primary-foreground">⏱️ {formattedTime}</p>
       </header>
 
       <main className="flex-1 py-6 px-4 max-w-6xl w-full mx-auto">
@@ -286,6 +414,8 @@ function App() {
           onAnswerSubmit={handleAnswerSubmit}
           onNext={handleNext}
           isLastQuestion={currentQuestionIndex === totalQuestions - 1}
+          mode={quizMode}
+          previousSelection={selectedAnswers.get(currentQuestion.id)}
         />
       </main>
     </div>

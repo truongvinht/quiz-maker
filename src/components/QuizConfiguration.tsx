@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import type { QuizTopic } from '../types/quiz';
+import type { QuizTopic, QuizConfig, QuizMode } from '../types/quiz';
 
 interface QuizConfigurationProps {
   topic: QuizTopic;
@@ -10,14 +10,10 @@ interface QuizConfigurationProps {
   onBack: () => void;
 }
 
-export interface QuizConfig {
-  startQuestion: number;
-  questionCount: number;
-}
-
 export default function QuizConfiguration({ topic, onStart, onBack }: QuizConfigurationProps) {
   const [startQuestion, setStartQuestion] = useState(1);
   const [questionCount, setQuestionCount] = useState(Math.min(30, topic.questionCount));
+  const [mode, setMode] = useState<QuizMode>('training');
 
   const maxQuestions = topic.questionCount - startQuestion + 1;
   const endQuestion = startQuestion + questionCount - 1;
@@ -45,16 +41,17 @@ export default function QuizConfiguration({ topic, onStart, onBack }: QuizConfig
     onStart({
       startQuestion,
       questionCount,
+      mode,
     });
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
-      <header className="bg-primary py-4 px-6 text-center shadow-xl">
+      <header className="bg-primary py-2 px-6 text-center shadow-xl">
         <h1 className="text-2xl md:text-3xl font-extrabold m-0 tracking-tight text-primary-foreground">
           Quiz Configuration
         </h1>
-        <p className="mt-1 text-sm m-0 font-medium text-primary-foreground/90">
+        <p className="mt-0 text-sm m-0 font-medium text-primary-foreground/90">
           {topic.icon} {topic.name}
         </p>
       </header>
@@ -77,6 +74,60 @@ export default function QuizConfiguration({ topic, onStart, onBack }: QuizConfig
               <Badge variant="secondary" className="text-2xl font-bold px-4 py-2">
                 {topic.questionCount}
               </Badge>
+            </div>
+
+            {/* Quiz Mode Selection */}
+            <div className="space-y-3">
+              <label className="block text-sm font-medium text-foreground">
+                Quiz Mode
+              </label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {/* Training Mode */}
+                <button
+                  type="button"
+                  onClick={() => setMode('training')}
+                  className={`relative flex flex-col items-start p-4 border-2 rounded-lg transition-all ${
+                    mode === 'training'
+                      ? 'border-primary bg-primary/10 shadow-md'
+                      : 'border-gray-300 hover:border-gray-400 bg-white'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className={`w-6 h-6 rounded-full transition-all ${
+                      mode === 'training'
+                        ? 'bg-primary border-2 border-primary'
+                        : 'border-2 border-gray-400 bg-white'
+                    }`}></div>
+                    <span className="font-bold text-base">Training Mode</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground text-left">
+                    Check answers immediately and see explanations after each question
+                  </p>
+                </button>
+
+                {/* Exam Mode */}
+                <button
+                  type="button"
+                  onClick={() => setMode('exam')}
+                  className={`relative flex flex-col items-start p-4 border-2 rounded-lg transition-all ${
+                    mode === 'exam'
+                      ? 'border-primary bg-primary/10 shadow-md'
+                      : 'border-gray-300 hover:border-gray-400 bg-white'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className={`w-6 h-6 rounded-full transition-all ${
+                      mode === 'exam'
+                        ? 'bg-primary border-2 border-primary'
+                        : 'border-2 border-gray-400 bg-white'
+                    }`}></div>
+                    <span className="font-bold text-base">Exam Mode</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground text-left">
+                    Answer all questions first, then review results at the end
+                  </p>
+                </button>
+              </div>
             </div>
 
             {/* Start Question Input */}

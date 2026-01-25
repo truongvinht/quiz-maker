@@ -1,3 +1,5 @@
+export type QuizMode = 'training' | 'exam';
+
 export interface QuizOption {
   id: string;
   label: string; // A, B, C, D, etc.
@@ -64,4 +66,15 @@ export interface QuizTopic {
   fileName: string;
   questionCount: number;
   icon?: string;
+}
+
+export interface QuizConfig {
+  startQuestion: number;
+  questionCount: number;
+  mode: QuizMode;
+}
+
+export interface SelectedAnswer {
+  questionId: string;
+  selectedOptions: string[] | Map<number, string>; // Array for standard, Map for ordering/matching
 }

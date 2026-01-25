@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Question } from '../types/quiz';
+import type { Question, QuizMode } from '../types/quiz';
 import AnswerOption from './AnswerOption';
 import ResultPanel from './ResultPanel';
 import OrderingQuestion from './OrderingQuestion';
@@ -14,15 +14,27 @@ interface QuestionCardProps {
   onAnswerSubmit?: (selectedOptions: string[] | Map<number, string>, isCorrect: boolean) => void;
   onNext?: () => void;
   isLastQuestion?: boolean;
+  mode?: QuizMode;
+  previousSelection?: string[] | Map<number, string>;
 }
 
 export default function QuestionCard({
   question,
   onAnswerSubmit,
   onNext,
-  isLastQuestion = false
+  isLastQuestion = false,
+  mode = 'training',
+  previousSelection
 }: QuestionCardProps) {
-  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
+  // Initialize state from props - for exam mode, restore previous selection
+  const getInitialSelection = () => {
+    if (mode === 'exam' && previousSelection && Array.isArray(previousSelection)) {
+      return previousSelection;
+    }
+    return [];
+  };
+
+  const [selectedOptions, setSelectedOptions] = useState<string[]>(getInitialSelection);
   const [submitted, setSubmitted] = useState(false);
 
   const isOrderingQuestion = question.questionType === 'ordering';
@@ -30,17 +42,31 @@ export default function QuestionCard({
 
   // Handle ordering question submission
   const handleOrderingSubmit = (selectedAnswers: Map<number, string>, isCorrect: boolean) => {
-    setSubmitted(true);
     if (onAnswerSubmit) {
       onAnswerSubmit(selectedAnswers, isCorrect);
+    }
+
+    // Only set submitted in training mode
+    if (mode === 'training') {
+      setSubmitted(true);
+    } else if (mode === 'exam' && onNext) {
+      // In exam mode, automatically move to next question
+      onNext();
     }
   };
 
   // Handle matching question submission
   const handleMatchingSubmit = (selectedAnswers: Map<number, string>, isCorrect: boolean) => {
-    setSubmitted(true);
     if (onAnswerSubmit) {
       onAnswerSubmit(selectedAnswers, isCorrect);
+    }
+
+    // Only set submitted in training mode
+    if (mode === 'training') {
+      setSubmitted(true);
+    } else if (mode === 'exam' && onNext) {
+      // In exam mode, automatically move to next question
+      onNext();
     }
   };
 
@@ -62,7 +88,6 @@ export default function QuestionCard({
 
   const handleSubmit = () => {
     if (selectedOptions.length === 0 || isOrderingQuestion || isMatchingQuestion) return;
-    setSubmitted(true);
 
     // Calculate if answer is correct (for standard questions)
     const correct =
@@ -72,6 +97,28 @@ export default function QuestionCard({
     // Notify parent component
     if (onAnswerSubmit) {
       onAnswerSubmit(selectedOptions, correct);
+    }
+
+    // Only set submitted state in training mode
+    if (mode === 'training') {
+      setSubmitted(true);
+    }
+  };
+
+  const handleExamNext = () => {
+    // In exam mode, save selection and move to next question
+    if (selectedOptions.length > 0) {
+      const correct =
+        selectedOptions.length === (question.correctAnswers?.length || 0) &&
+        selectedOptions.every((id) => question.correctAnswers?.includes(id));
+
+      if (onAnswerSubmit) {
+        onAnswerSubmit(selectedOptions, correct);
+      }
+    }
+
+    if (onNext) {
+      onNext();
     }
   };
 
@@ -154,8 +201,8 @@ export default function QuestionCard({
               disabled={submitted}
             />
 
-            {/* Next button for ordering questions */}
-            {submitted && onNext && (
+            {/* Next button for ordering questions - only show in training mode after submission */}
+            {mode === 'training' && submitted && onNext && (
               <div className="flex gap-3 pt-2">
                 <Button
                   size="default"
@@ -168,8 +215,8 @@ export default function QuestionCard({
               </div>
             )}
 
-            {/* Result panel for ordering questions */}
-            {submitted && (
+            {/* Result panel for ordering questions - only show in training mode */}
+            {mode === 'training' && submitted && (
               <ResultPanel
                 isCorrect={true} // Correctness is shown per-step in OrderingQuestion
                 explanation={question.explanation}
@@ -187,8 +234,8 @@ export default function QuestionCard({
               disabled={submitted}
             />
 
-            {/* Next button for matching questions */}
-            {submitted && onNext && (
+            {/* Next button for matching questions - only show in training mode after submission */}
+            {mode === 'training' && submitted && onNext && (
               <div className="flex gap-3 pt-2">
                 <Button
                   size="default"
@@ -201,8 +248,8 @@ export default function QuestionCard({
               </div>
             )}
 
-            {/* Result panel for matching questions */}
-            {submitted && (
+            {/* Result panel for matching questions - only show in training mode */}
+            {mode === 'training' && submitted && (
               <ResultPanel
                 isCorrect={true} // Correctness is shown per-scenario in MatchingQuestion
                 explanation={question.explanation}
@@ -234,32 +281,47 @@ export default function QuestionCard({
 
             {/* Action buttons */}
             <div className="flex gap-3">
-              {!submitted ? (
+              {mode === 'exam' ? (
+                // Exam mode: Show Next/Submit button directly
                 <Button
                   size="default"
-                  className="flex-1 sm:flex-none h-9 hover:shadow-xl transition-all"
-                  onClick={handleSubmit}
-                  disabled={selectedOptions.length === 0}
-                  aria-label="Submit your answer"
+                  className="flex-1 sm:flex-none h-9 transition-all hover:scale-105"
+                  onClick={handleExamNext}
+                  aria-label={isLastQuestion ? "Submit Exam" : "Next Question"}
                 >
-                  {selectedOptions.length === 0 ? 'Select an answer' : 'Check Answer →'}
+                  {isLastQuestion ? '📝 Submit Exam' : 'Next Question →'}
                 </Button>
               ) : (
-                onNext && (
-                  <Button
-                    size="default"
-                    className="flex-1 sm:flex-none h-9 transition-all hover:scale-105"
-                    onClick={onNext}
-                    aria-label={isLastQuestion ? "View Results" : "Next Question"}
-                  >
-                    {isLastQuestion ? '📊 View Results' : 'Next Question →'}
-                  </Button>
-                )
+                // Training mode: Show Check Answer then Next
+                <>
+                  {!submitted ? (
+                    <Button
+                      size="default"
+                      className="flex-1 sm:flex-none h-9 hover:shadow-xl transition-all"
+                      onClick={handleSubmit}
+                      disabled={selectedOptions.length === 0}
+                      aria-label="Submit your answer"
+                    >
+                      {selectedOptions.length === 0 ? 'Select an answer' : 'Check Answer →'}
+                    </Button>
+                  ) : (
+                    onNext && (
+                      <Button
+                        size="default"
+                        className="flex-1 sm:flex-none h-9 transition-all hover:scale-105"
+                        onClick={onNext}
+                        aria-label={isLastQuestion ? "View Results" : "Next Question"}
+                      >
+                        {isLastQuestion ? '📊 View Results' : 'Next Question →'}
+                      </Button>
+                    )
+                  )}
+                </>
               )}
             </div>
 
-            {/* Result panel */}
-            {submitted && (
+            {/* Result panel - only show in training mode */}
+            {mode === 'training' && submitted && (
               <ResultPanel
                 isCorrect={isCorrect}
                 explanation={question.explanation}
