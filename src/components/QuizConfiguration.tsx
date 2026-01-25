@@ -62,14 +62,14 @@ export default function QuizConfiguration({ topic, onStart, onBack }: QuizConfig
             <CardTitle className="text-2xl md:text-3xl font-bold text-foreground">
               Configure Your Quiz
             </CardTitle>
-            <CardDescription className="text-base mt-2">
+            <CardDescription className="text-base mt-1">
               Choose how many questions to practice and where to start
             </CardDescription>
           </CardHeader>
 
-          <CardContent className="space-y-6 pt-4">
+          <CardContent className="space-y-4 pt-4">
             {/* Total Available Questions */}
-            <div className="bg-muted rounded-lg p-4 text-center">
+            <div className="bg-muted rounded-lg p-3 text-center">
               <p className="text-sm text-muted-foreground mb-1">Total Available Questions</p>
               <Badge variant="secondary" className="text-2xl font-bold px-4 py-2">
                 {topic.questionCount}
@@ -130,42 +130,45 @@ export default function QuizConfiguration({ topic, onStart, onBack }: QuizConfig
               </div>
             </div>
 
-            {/* Start Question Input */}
-            <div className="space-y-2">
-              <label htmlFor="startQuestion" className="block text-sm font-medium text-foreground">
-                Start from Question #
-              </label>
-              <input
-                id="startQuestion"
-                type="number"
-                min="1"
-                max={topic.questionCount}
-                value={startQuestion}
-                onChange={(e) => handleStartQuestionChange(e.target.value)}
-                className="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-              />
-              <p className="text-xs text-muted-foreground">
-                Enter a number between 1 and {topic.questionCount}
-              </p>
-            </div>
+            {/* Question Range Inputs */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Start Question Input */}
+              <div className="space-y-2">
+                <label htmlFor="startQuestion" className="block text-sm font-medium text-foreground">
+                  Start from Question #
+                </label>
+                <input
+                  id="startQuestion"
+                  type="number"
+                  min="1"
+                  max={topic.questionCount}
+                  value={startQuestion}
+                  onChange={(e) => handleStartQuestionChange(e.target.value)}
+                  className="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Enter a number between 1 and {topic.questionCount}
+                </p>
+              </div>
 
-            {/* Question Count Input */}
-            <div className="space-y-2">
-              <label htmlFor="questionCount" className="block text-sm font-medium text-foreground">
-                Number of Questions
-              </label>
-              <input
-                id="questionCount"
-                type="number"
-                min="1"
-                max={maxQuestions}
-                value={questionCount}
-                onChange={(e) => handleQuestionCountChange(e.target.value)}
-                className="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-              />
-              <p className="text-xs text-muted-foreground">
-                Maximum {maxQuestions} questions available from question #{startQuestion}
-              </p>
+              {/* Question Count Input */}
+              <div className="space-y-2">
+                <label htmlFor="questionCount" className="block text-sm font-medium text-foreground">
+                  Number of Questions
+                </label>
+                <input
+                  id="questionCount"
+                  type="number"
+                  min="1"
+                  max={maxQuestions}
+                  value={questionCount}
+                  onChange={(e) => handleQuestionCountChange(e.target.value)}
+                  className="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Maximum {maxQuestions} questions available from question #{startQuestion}
+                </p>
+              </div>
             </div>
 
             {/* Quiz Range Preview */}
