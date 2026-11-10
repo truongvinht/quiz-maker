@@ -1,0 +1,10 @@
+[
+  {
+    "id": "my-topic",
+    "name": "My Topic",
+    "description": "Short description shown on the topic card.",
+    "fileName": "my-topic.json",
+    "questionCount": 10,
+    "icon": "📚"
+  }
+]
