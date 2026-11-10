@@ -1,14 +1,28 @@
 import type { Question } from '../types/quiz';
 import { shuffleArray } from '../utils/shuffleArray';
 
+// Public question banks in src/data/ and private ones in src/data/private/ (gitignored)
+const questionFiles = import.meta.glob<Question[]>(
+  [
+    '../data/*.json',
+    '../data/private/*.json',
+    '!../data/private/topics.json',
+    '!../data/private/topics.example.json',
+  ],
+  { import: 'default' }
+);
+
 /**
  * Load questions from a specific topic file and randomize their order
  */
 export async function loadQuestions(fileName: string): Promise<Question[]> {
-  // Remove .json extension from fileName if present to add it in the static part
-  const baseName = fileName.replace(/\.json$/, '');
-  const questionsData = await import(`../data/${baseName}.json`);
-  return shuffleArray(questionsData.default as Question[]);
+  const name = fileName.endsWith('.json') ? fileName : `${fileName}.json`;
+  const loader =
+    questionFiles[`../data/${name}`] ?? questionFiles[`../data/private/${name}`];
+  if (!loader) {
+    throw new Error(`Question file not found: ${name}`);
+  }
+  return shuffleArray(await loader());
 }
 
 /**
