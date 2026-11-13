@@ -38,6 +38,11 @@ export default function QuizConfiguration({ topic, onStart, onBack }: QuizConfig
   };
 
   const handleStart = () => {
+    if (mode === 'sequential') {
+      // App ignores these numbers for sequential mode
+      onStart({ startQuestion: 1, questionCount: topic.questionCount, mode });
+      return;
+    }
     onStart({
       startQuestion,
       questionCount,
@@ -81,7 +86,7 @@ export default function QuizConfiguration({ topic, onStart, onBack }: QuizConfig
               <label className="block text-sm font-medium text-foreground">
                 Quiz Mode
               </label>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {/* Training Mode */}
                 <button
                   type="button"
@@ -127,9 +132,34 @@ export default function QuizConfiguration({ topic, onStart, onBack }: QuizConfig
                     Answer all questions first, then review results at the end
                   </p>
                 </button>
+
+                {/* Sequential Mode */}
+                <button
+                  type="button"
+                  onClick={() => setMode('sequential')}
+                  className={`relative flex flex-col items-start p-4 border-2 rounded-lg transition-all ${
+                    mode === 'sequential'
+                      ? 'border-primary bg-primary/10 shadow-md'
+                      : 'border-gray-300 hover:border-gray-400 bg-white'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className={`w-6 h-6 rounded-full transition-all ${
+                      mode === 'sequential'
+                        ? 'bg-primary border-2 border-primary'
+                        : 'border-2 border-gray-400 bg-white'
+                    }`}></div>
+                    <span className="font-bold text-base">Sequential Mode</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground text-left">
+                    All questions in order — your progress is saved in this browser
+                  </p>
+                </button>
               </div>
             </div>
 
+            {mode !== 'sequential' && (
+              <>
             {/* Question Range Inputs */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Start Question Input */}
@@ -187,6 +217,8 @@ export default function QuizConfiguration({ topic, onStart, onBack }: QuizConfig
                 ({questionCount} question{questionCount !== 1 ? 's' : ''})
               </p>
             </div>
+              </>
+            )}
 
             {/* Action Buttons */}
             <div className="flex gap-3 pt-4">
