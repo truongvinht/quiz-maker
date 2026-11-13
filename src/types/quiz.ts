@@ -1,4 +1,4 @@
-export type QuizMode = 'training' | 'exam';
+export type QuizMode = 'training' | 'exam' | 'sequential';
 
 export interface QuizOption {
   id: string;

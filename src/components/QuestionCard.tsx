@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useKeyboardShortcut } from '../lib/keyboardShortcuts';
 import type { Question, QuizMode } from '../types/quiz';
 import AnswerOption from './AnswerOption';
 import ResultPanel from './ResultPanel';
@@ -16,6 +17,7 @@ interface QuestionCardProps {
   isLastQuestion?: boolean;
   mode?: QuizMode;
   previousSelection?: string[] | Map<number, string>;
+  lockedSelection?: string[] | Map<number, string>;
 }
 
 export default function QuestionCard({
@@ -24,10 +26,16 @@ export default function QuestionCard({
   onNext,
   isLastQuestion = false,
   mode = 'training',
-  previousSelection
+  previousSelection,
+  lockedSelection
 }: QuestionCardProps) {
+  const checksImmediately = mode !== 'exam';
+  const isLocked = lockedSelection !== undefined;
   // Initialize state from props - for exam mode, restore previous selection
   const getInitialSelection = () => {
+    if (lockedSelection && Array.isArray(lockedSelection)) {
+      return lockedSelection;
+    }
     if (mode === 'exam' && previousSelection && Array.isArray(previousSelection)) {
       return previousSelection;
     }
@@ -35,7 +43,7 @@ export default function QuestionCard({
   };
 
   const [selectedOptions, setSelectedOptions] = useState<string[]>(getInitialSelection);
-  const [submitted, setSubmitted] = useState(false);
+  const [submitted, setSubmitted] = useState(isLocked);
 
   const isOrderingQuestion = question.questionType === 'ordering';
   const isMatchingQuestion = question.questionType === 'matching';
@@ -46,10 +54,10 @@ export default function QuestionCard({
       onAnswerSubmit(selectedAnswers, isCorrect);
     }
 
-    // Only set submitted in training mode
-    if (mode === 'training') {
+    // Check immediately in training and sequential mode
+    if (checksImmediately) {
       setSubmitted(true);
-    } else if (mode === 'exam' && onNext) {
+    } else if (onNext) {
       // In exam mode, automatically move to next question
       onNext();
     }
@@ -61,10 +69,10 @@ export default function QuestionCard({
       onAnswerSubmit(selectedAnswers, isCorrect);
     }
 
-    // Only set submitted in training mode
-    if (mode === 'training') {
+    // Check immediately in training and sequential mode
+    if (checksImmediately) {
       setSubmitted(true);
-    } else if (mode === 'exam' && onNext) {
+    } else if (onNext) {
       // In exam mode, automatically move to next question
       onNext();
     }
@@ -87,7 +95,7 @@ export default function QuestionCard({
   };
 
   const handleSubmit = () => {
-    if (selectedOptions.length === 0 || isOrderingQuestion || isMatchingQuestion) return;
+    if (submitted || selectedOptions.length === 0 || isOrderingQuestion || isMatchingQuestion) return;
 
     // Calculate if answer is correct (for standard questions)
     const correct =
@@ -99,11 +107,17 @@ export default function QuestionCard({
       onAnswerSubmit(selectedOptions, correct);
     }
 
-    // Only set submitted state in training mode
-    if (mode === 'training') {
+    // Check immediately in training and sequential mode
+    if (checksImmediately) {
       setSubmitted(true);
     }
   };
+
+  useKeyboardShortcut((action) => {
+    if (action.type !== 'option') return;
+    const option = question.options?.[action.index];
+    if (option) handleOptionSelect(option.id);
+  }, !isOrderingQuestion && !isMatchingQuestion && !submitted);
 
   const handleExamNext = () => {
     // In exam mode, save selection and move to next question
@@ -199,10 +213,12 @@ export default function QuestionCard({
               steps={question.steps}
               onSubmit={handleOrderingSubmit}
               disabled={submitted}
+              initialAnswers={isLocked && lockedSelection instanceof Map ? lockedSelection : undefined}
+              allowRetry={mode !== 'sequential'}
             />
 
             {/* Next button for ordering questions - only show in training mode after submission */}
-            {mode === 'training' && submitted && onNext && (
+            {checksImmediately && submitted && onNext && (
               <div className="flex gap-3 pt-2">
                 <Button
                   size="default"
@@ -216,7 +232,7 @@ export default function QuestionCard({
             )}
 
             {/* Result panel for ordering questions - only show in training mode */}
-            {mode === 'training' && submitted && (
+            {checksImmediately && submitted && (
               <ResultPanel
                 isCorrect={true} // Correctness is shown per-step in OrderingQuestion
                 explanation={question.explanation}
@@ -232,10 +248,11 @@ export default function QuestionCard({
               matchingOptions={question.matchingOptions}
               onSubmit={handleMatchingSubmit}
               disabled={submitted}
+              initialAnswers={isLocked && lockedSelection instanceof Map ? lockedSelection : undefined}
             />
 
             {/* Next button for matching questions - only show in training mode after submission */}
-            {mode === 'training' && submitted && onNext && (
+            {checksImmediately && submitted && onNext && (
               <div className="flex gap-3 pt-2">
                 <Button
                   size="default"
@@ -249,7 +266,7 @@ export default function QuestionCard({
             )}
 
             {/* Result panel for matching questions - only show in training mode */}
-            {mode === 'training' && submitted && (
+            {checksImmediately && submitted && (
               <ResultPanel
                 isCorrect={true} // Correctness is shown per-scenario in MatchingQuestion
                 explanation={question.explanation}
@@ -321,7 +338,7 @@ export default function QuestionCard({
             </div>
 
             {/* Result panel - only show in training mode */}
-            {mode === 'training' && submitted && (
+            {checksImmediately && submitted && (
               <ResultPanel
                 isCorrect={isCorrect}
                 explanation={question.explanation}
