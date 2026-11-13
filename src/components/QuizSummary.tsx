@@ -12,7 +12,10 @@ interface QuizSummaryProps {
 
 export default function QuizSummary({ summary, onRestart, elapsedTime }: QuizSummaryProps) {
   const { correctAnswers, incorrectAnswers, score, results } = summary;
-  const [expandedQuestions, setExpandedQuestions] = useState<Set<string>>(new Set());
+  // Wrong answers start expanded so they can be reviewed right away; correct ones stay collapsed.
+  const [expandedQuestions, setExpandedQuestions] = useState<Set<string>>(
+    () => new Set(results.filter((result) => !result.isCorrect).map((result) => result.questionId)),
+  );
 
   const toggleQuestion = (questionId: string) => {
     setExpandedQuestions((prev) => {
