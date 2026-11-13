@@ -23,8 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 
-CLAUDE.md
-
 # Private quiz data (see src/data/private/README.md)
 src/data/private/*
 !src/data/private/README.md
