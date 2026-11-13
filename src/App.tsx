@@ -36,6 +36,8 @@ function App() {
   const [selectedAnswers, setSelectedAnswers] = useState<Map<string, string[] | Map<number, string>>>(new Map());
 
   const [sequentialProgress, setSequentialProgress] = useState<SequentialProgress>({});
+  // Bumped on sequential reset so the current QuestionCard remounts with fresh state
+  const [resetGeneration, setResetGeneration] = useState(0);
 
   const { formattedTime, reset: resetTimer } = useTimer(quizStarted && !quizCompleted);
 
@@ -242,6 +244,7 @@ function App() {
     if (window.confirm(`Reset all saved progress for "${selectedTopic.name}"? This cannot be undone.`)) {
       resetProgress(selectedTopic.id);
       setSequentialProgress({});
+      setResetGeneration((g) => g + 1);
     }
   };
 
@@ -412,7 +415,7 @@ function App() {
         </div>
 
         <QuestionCard
-          key={currentQuestion.id}
+          key={`${currentQuestion.id}:${resetGeneration}`}
           question={currentQuestion}
           onAnswerSubmit={handleAnswerSubmit}
           onNext={isSequential ? handleSequentialNext : handleNext}
