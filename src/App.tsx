@@ -39,6 +39,8 @@ function App() {
   const [sequentialProgress, setSequentialProgress] = useState<SequentialProgress>({});
   // Bumped on sequential reset so the current QuestionCard remounts with fresh state
   const [resetGeneration, setResetGeneration] = useState(0);
+  // The question whose answer completed the bank; its card offers "View Results"
+  const [completedOnQuestionId, setCompletedOnQuestionId] = useState<string | null>(null);
 
   // Exam mode: the current card's live selection, saved when D moves on
   const liveExamSelection = useRef<string[]>([]);
@@ -96,13 +98,15 @@ function App() {
     // Sequential mode: answers are final; persist once per question
     if (quizMode === 'sequential') {
       if (!selectedTopic || isAnswered(sequentialProgress, currentQuestion.id)) return;
-      setSequentialProgress(
-        saveAnswer(selectedTopic.id, sequentialProgress, currentQuestion.id, {
-          selection: toStoredSelection(selectedOptions),
-          isCorrect: buildQuizResult(currentQuestion, selectedOptions).isCorrect,
-          answeredAt: new Date().toISOString(),
-        })
-      );
+      const nextProgress = saveAnswer(selectedTopic.id, sequentialProgress, currentQuestion.id, {
+        selection: toStoredSelection(selectedOptions),
+        isCorrect: buildQuizResult(currentQuestion, selectedOptions).isCorrect,
+        answeredAt: new Date().toISOString(),
+      });
+      setSequentialProgress(nextProgress);
+      if (progressCounts(questions, nextProgress).answered === totalQuestions) {
+        setCompletedOnQuestionId(currentQuestion.id);
+      }
       return;
     }
 
@@ -217,6 +221,7 @@ function App() {
     setSelectedAnswers(new Map());
     setQuizCompleted(false);
     setSequentialProgress({}); // in-memory only; storage is kept
+    setCompletedOnQuestionId(null);
     setSelectedTopic(null);
     setQuizConfig(null);
     setQuestions([]);
@@ -242,7 +247,12 @@ function App() {
 
   const handleSequentialNext = () => {
     if (allSequentialAnswered) {
-      setQuizCompleted(true);
+      if (currentQuestion.id === completedOnQuestionId) {
+        setQuizCompleted(true);
+      } else {
+        // Reviewing: step forward, wrapping from the last question to the first
+        setCurrentQuestionIndex(currentQuestionIndex < totalQuestions - 1 ? currentQuestionIndex + 1 : 0);
+      }
     } else if (currentQuestionIndex < totalQuestions - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
@@ -257,6 +267,7 @@ function App() {
     if (window.confirm(`Reset all saved progress for "${selectedTopic.name}"? This cannot be undone.`)) {
       resetProgress(selectedTopic.id);
       setSequentialProgress({});
+      setCompletedOnQuestionId(null);
       setResetGeneration((g) => g + 1);
     }
   };
@@ -432,7 +443,7 @@ function App() {
           question={currentQuestion}
           onAnswerSubmit={handleAnswerSubmit}
           onNext={isSequential ? handleSequentialNext : handleNext}
-          isLastQuestion={isSequential ? allSequentialAnswered : currentQuestionIndex === totalQuestions - 1}
+          isLastQuestion={isSequential ? allSequentialAnswered && currentQuestion.id === completedOnQuestionId : currentQuestionIndex === totalQuestions - 1}
           mode={quizMode}
           onSelectionChange={handleExamSelectionChange}
           previousSelection={selectedAnswers.get(currentQuestion.id)}
