@@ -6,6 +6,7 @@ import QuizConfiguration from './components/QuizConfiguration';
 import { loadRandomizedQuiz } from './services/questionService';
 import { quizTopics } from './data/topics';
 import { useTimer } from './hooks/useTimer';
+import { buildQuizResult } from './lib/quizResult';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import type { QuizResult, QuizSummary as QuizSummaryType, Question, QuizTopic, QuizConfig, QuizMode } from './types/quiz';
@@ -106,105 +107,10 @@ function App() {
     const validatedAnswers = new Map<string, QuizResult>();
 
     questions.forEach((question) => {
-      const selectedAnswer = selectedAnswers.get(question.id);
-      const isOrderingQuestion = question.questionType === 'ordering';
-      const isMatchingQuestion = question.questionType === 'matching';
-
-      let userAnswersArray: string[];
-      let userAnswerTexts: string[];
-      let correctAnswerTexts: string[];
-      let isCorrect = false;
-
-      if (!selectedAnswer) {
-        // No answer provided
-        if (isOrderingQuestion) {
-          correctAnswerTexts = question.steps?.map((step) =>
-            `Step ${step.stepNumber}: ${step.correctAnswer}`
-          ) || [];
-        } else if (isMatchingQuestion) {
-          correctAnswerTexts = question.scenarios?.map((scenario) =>
-            `Scenario ${scenario.id}: ${scenario.correctAnswer}`
-          ) || [];
-        } else {
-          correctAnswerTexts = (question.correctAnswers || []).map(
-            (id) => question.options?.find((opt) => opt.id === id)?.text || ''
-          );
-        }
-
-        validatedAnswers.set(question.id, {
-          questionId: question.id,
-          questionText: question.text,
-          userAnswers: [],
-          userAnswerTexts: [],
-          correctAnswers: question.correctAnswers || [],
-          correctAnswerTexts,
-          isCorrect: false,
-          isMultipleChoice: question.isMultipleChoice,
-          options: question.options || [],
-          explanation: question.explanation,
-        });
-        return;
-      }
-
-      if (isOrderingQuestion) {
-        const answerMap = selectedAnswer as Map<number, string>;
-        userAnswersArray = Array.from(answerMap.entries())
-          .sort((a, b) => a[0] - b[0])
-          .map(([, value]) => value);
-
-        userAnswerTexts = userAnswersArray.map((answer, index) => `Step ${index + 1}: ${answer}`);
-        correctAnswerTexts = question.steps?.map((step) =>
-          `Step ${step.stepNumber}: ${step.correctAnswer}`
-        ) || [];
-
-        // Check if ordering is correct
-        isCorrect = question.steps?.every((step, index) =>
-          userAnswersArray[index] === step.correctAnswer
-        ) || false;
-      } else if (isMatchingQuestion) {
-        const answerMap = selectedAnswer as Map<number, string>;
-        userAnswersArray = Array.from(answerMap.entries())
-          .sort((a, b) => a[0] - b[0])
-          .map(([, value]) => value);
-
-        userAnswerTexts = userAnswersArray.map((answer, index) => `Scenario ${index + 1}: ${answer}`);
-        correctAnswerTexts = question.scenarios?.map((scenario) =>
-          `Scenario ${scenario.id}: ${scenario.correctAnswer}`
-        ) || [];
-
-        // Check if matching is correct
-        isCorrect = question.scenarios?.every((scenario, index) =>
-          userAnswersArray[index] === scenario.correctAnswer
-        ) || false;
-      } else {
-        const optionsArray = selectedAnswer as string[];
-        userAnswersArray = optionsArray;
-
-        userAnswerTexts = optionsArray.map(
-          (id) => question.options?.find((opt) => opt.id === id)?.text || ''
-        );
-        correctAnswerTexts = (question.correctAnswers || []).map(
-          (id) => question.options?.find((opt) => opt.id === id)?.text || ''
-        );
-
-        // Check if answer is correct
-        isCorrect =
-          optionsArray.length === (question.correctAnswers?.length || 0) &&
-          optionsArray.every((id) => question.correctAnswers?.includes(id));
-      }
-
-      validatedAnswers.set(question.id, {
-        questionId: question.id,
-        questionText: question.text,
-        userAnswers: userAnswersArray,
-        userAnswerTexts,
-        correctAnswers: question.correctAnswers || [],
-        correctAnswerTexts,
-        isCorrect,
-        isMultipleChoice: question.isMultipleChoice,
-        options: question.options || [],
-        explanation: question.explanation,
-      });
+      validatedAnswers.set(
+        question.id,
+        buildQuizResult(question, selectedAnswers.get(question.id))
+      );
     });
 
     setUserAnswers(validatedAnswers);
