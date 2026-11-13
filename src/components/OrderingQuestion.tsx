@@ -8,15 +8,21 @@ interface OrderingQuestionProps {
   steps: OrderingStep[];
   onSubmit: (selectedAnswers: Map<number, string>, isCorrect: boolean) => void;
   disabled?: boolean;
+  initialAnswers?: Map<number, string>;
+  allowRetry?: boolean;
 }
 
 export default function OrderingQuestion({
   steps,
   onSubmit,
-  disabled = false
+  disabled = false,
+  initialAnswers,
+  allowRetry = true
 }: OrderingQuestionProps) {
-  const [selectedAnswers, setSelectedAnswers] = useState<Map<number, string>>(new Map());
-  const [submitted, setSubmitted] = useState(false);
+  const [selectedAnswers, setSelectedAnswers] = useState<Map<number, string>>(
+    () => new Map(initialAnswers ?? [])
+  );
+  const [submitted, setSubmitted] = useState(initialAnswers !== undefined);
 
   const handleStepChange = (stepNumber: number, value: string) => {
     if (submitted) return;
@@ -162,7 +168,7 @@ export default function OrderingQuestion({
           >
             {allStepsSelected ? 'Check Answer →' : 'Complete all steps'}
           </Button>
-        ) : (
+        ) : allowRetry && (
           <Button
             onClick={handleReset}
             variant="outline"

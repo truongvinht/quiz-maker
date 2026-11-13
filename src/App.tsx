@@ -1,11 +1,25 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import QuestionCard from './components/QuestionCard';
 import QuizSummary from './components/QuizSummary';
 import TopicSelection from './components/TopicSelection';
 import QuizConfiguration from './components/QuizConfiguration';
-import { loadRandomizedQuiz } from './services/questionService';
+import QuestionNavigator from './components/QuestionNavigator';
+import { loadRandomizedQuiz, loadSequentialQuiz } from './services/questionService';
 import { quizTopics } from './data/topics';
 import { useTimer } from './hooks/useTimer';
+import { buildQuizResult } from './lib/quizResult';
+import {
+  loadProgress,
+  saveAnswer,
+  resetProgress,
+  toStoredSelection,
+  fromStoredSelection,
+  progressCounts,
+  isAnswered,
+  findDuplicateIds,
+  type SequentialProgress,
+} from './lib/sequentialProgress';
+import { useKeyboardShortcut } from './lib/keyboardShortcuts';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import type { QuizResult, QuizSummary as QuizSummaryType, Question, QuizTopic, QuizConfig, QuizMode } from './types/quiz';
@@ -22,7 +36,23 @@ function App() {
   const [quizMode, setQuizMode] = useState<QuizMode>('training');
   const [selectedAnswers, setSelectedAnswers] = useState<Map<string, string[] | Map<number, string>>>(new Map());
 
+  const [sequentialProgress, setSequentialProgress] = useState<SequentialProgress>({});
+  // Bumped on sequential reset so the current QuestionCard remounts with fresh state
+  const [resetGeneration, setResetGeneration] = useState(0);
+  // The question whose answer completed the bank; its card offers "View Results"
+  const [completedOnQuestionId, setCompletedOnQuestionId] = useState<string | null>(null);
+
+  // Exam mode: the current card's live selection, saved when D moves on
+  const liveExamSelection = useRef<string[]>([]);
+  const handleExamSelectionChange = useCallback((selected: string[]) => {
+    liveExamSelection.current = selected;
+  }, []);
+
   const { formattedTime, reset: resetTimer } = useTimer(quizStarted && !quizCompleted);
+
+  const isSequential = quizMode === 'sequential';
+  const questionScreenActive =
+    !!selectedTopic && !!quizConfig && !isLoading && questions.length > 0 && !quizCompleted;
 
   // Load questions when quiz configuration is complete
   useEffect(() => {
@@ -31,16 +61,33 @@ function App() {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsLoading(true);
       setQuizMode(quizConfig.mode); // Set quiz mode from configuration
-      loadRandomizedQuiz(
-        selectedTopic.fileName,
-        quizConfig.startQuestion,
-        quizConfig.questionCount
-      )
-        .then((loadedQuestions) => {
-          setQuestions(loadedQuestions);
-          setQuizStarted(true); // Start timer when questions are loaded
-        })
-        .finally(() => setIsLoading(false));
+      if (quizConfig.mode === 'sequential') {
+        loadSequentialQuiz(selectedTopic.fileName)
+          .then((loadedQuestions) => {
+            const duplicates = findDuplicateIds(loadedQuestions);
+            if (duplicates.length > 0) {
+              console.warn('Duplicate question ids in sequential quiz:', duplicates);
+            }
+            const progress = loadProgress(selectedTopic.id);
+            const firstUnanswered = loadedQuestions.findIndex((q) => !isAnswered(progress, q.id));
+            setSequentialProgress(progress);
+            setCurrentQuestionIndex(firstUnanswered === -1 ? 0 : firstUnanswered);
+            setQuestions(loadedQuestions);
+            setQuizStarted(true);
+          })
+          .finally(() => setIsLoading(false));
+      } else {
+        loadRandomizedQuiz(
+          selectedTopic.fileName,
+          quizConfig.startQuestion,
+          quizConfig.questionCount
+        )
+          .then((loadedQuestions) => {
+            setQuestions(loadedQuestions);
+            setQuizStarted(true); // Start timer when questions are loaded
+          })
+          .finally(() => setIsLoading(false));
+      }
     }
   }, [selectedTopic, quizConfig]);
 
@@ -48,6 +95,21 @@ function App() {
   const totalQuestions = questions.length;
 
   const handleAnswerSubmit = (selectedOptions: string[] | Map<number, string>, isCorrect: boolean) => {
+    // Sequential mode: answers are final; persist once per question
+    if (quizMode === 'sequential') {
+      if (!selectedTopic || isAnswered(sequentialProgress, currentQuestion.id)) return;
+      const nextProgress = saveAnswer(selectedTopic.id, sequentialProgress, currentQuestion.id, {
+        selection: toStoredSelection(selectedOptions),
+        isCorrect: buildQuizResult(currentQuestion, selectedOptions).isCorrect,
+        answeredAt: new Date().toISOString(),
+      });
+      setSequentialProgress(nextProgress);
+      if (progressCounts(questions, nextProgress).answered === totalQuestions) {
+        setCompletedOnQuestionId(currentQuestion.id);
+      }
+      return;
+    }
+
     // In exam mode, just store the selection without validation
     if (quizMode === 'exam') {
       setSelectedAnswers((prev) => new Map(prev).set(currentQuestion.id, selectedOptions));
@@ -106,105 +168,10 @@ function App() {
     const validatedAnswers = new Map<string, QuizResult>();
 
     questions.forEach((question) => {
-      const selectedAnswer = selectedAnswers.get(question.id);
-      const isOrderingQuestion = question.questionType === 'ordering';
-      const isMatchingQuestion = question.questionType === 'matching';
-
-      let userAnswersArray: string[];
-      let userAnswerTexts: string[];
-      let correctAnswerTexts: string[];
-      let isCorrect = false;
-
-      if (!selectedAnswer) {
-        // No answer provided
-        if (isOrderingQuestion) {
-          correctAnswerTexts = question.steps?.map((step) =>
-            `Step ${step.stepNumber}: ${step.correctAnswer}`
-          ) || [];
-        } else if (isMatchingQuestion) {
-          correctAnswerTexts = question.scenarios?.map((scenario) =>
-            `Scenario ${scenario.id}: ${scenario.correctAnswer}`
-          ) || [];
-        } else {
-          correctAnswerTexts = (question.correctAnswers || []).map(
-            (id) => question.options?.find((opt) => opt.id === id)?.text || ''
-          );
-        }
-
-        validatedAnswers.set(question.id, {
-          questionId: question.id,
-          questionText: question.text,
-          userAnswers: [],
-          userAnswerTexts: [],
-          correctAnswers: question.correctAnswers || [],
-          correctAnswerTexts,
-          isCorrect: false,
-          isMultipleChoice: question.isMultipleChoice,
-          options: question.options || [],
-          explanation: question.explanation,
-        });
-        return;
-      }
-
-      if (isOrderingQuestion) {
-        const answerMap = selectedAnswer as Map<number, string>;
-        userAnswersArray = Array.from(answerMap.entries())
-          .sort((a, b) => a[0] - b[0])
-          .map(([, value]) => value);
-
-        userAnswerTexts = userAnswersArray.map((answer, index) => `Step ${index + 1}: ${answer}`);
-        correctAnswerTexts = question.steps?.map((step) =>
-          `Step ${step.stepNumber}: ${step.correctAnswer}`
-        ) || [];
-
-        // Check if ordering is correct
-        isCorrect = question.steps?.every((step, index) =>
-          userAnswersArray[index] === step.correctAnswer
-        ) || false;
-      } else if (isMatchingQuestion) {
-        const answerMap = selectedAnswer as Map<number, string>;
-        userAnswersArray = Array.from(answerMap.entries())
-          .sort((a, b) => a[0] - b[0])
-          .map(([, value]) => value);
-
-        userAnswerTexts = userAnswersArray.map((answer, index) => `Scenario ${index + 1}: ${answer}`);
-        correctAnswerTexts = question.scenarios?.map((scenario) =>
-          `Scenario ${scenario.id}: ${scenario.correctAnswer}`
-        ) || [];
-
-        // Check if matching is correct
-        isCorrect = question.scenarios?.every((scenario, index) =>
-          userAnswersArray[index] === scenario.correctAnswer
-        ) || false;
-      } else {
-        const optionsArray = selectedAnswer as string[];
-        userAnswersArray = optionsArray;
-
-        userAnswerTexts = optionsArray.map(
-          (id) => question.options?.find((opt) => opt.id === id)?.text || ''
-        );
-        correctAnswerTexts = (question.correctAnswers || []).map(
-          (id) => question.options?.find((opt) => opt.id === id)?.text || ''
-        );
-
-        // Check if answer is correct
-        isCorrect =
-          optionsArray.length === (question.correctAnswers?.length || 0) &&
-          optionsArray.every((id) => question.correctAnswers?.includes(id));
-      }
-
-      validatedAnswers.set(question.id, {
-        questionId: question.id,
-        questionText: question.text,
-        userAnswers: userAnswersArray,
-        userAnswerTexts,
-        correctAnswers: question.correctAnswers || [],
-        correctAnswerTexts,
-        isCorrect,
-        isMultipleChoice: question.isMultipleChoice,
-        options: question.options || [],
-        explanation: question.explanation,
-      });
+      validatedAnswers.set(
+        question.id,
+        buildQuizResult(question, selectedAnswers.get(question.id))
+      );
     });
 
     setUserAnswers(validatedAnswers);
@@ -230,11 +197,31 @@ function App() {
     }
   };
 
+  // A/D navigation in all modes; option keys are handled by QuestionCard.
+  // Must stay above every early return (hooks rule).
+  useKeyboardShortcut((action) => {
+    if (action.type === 'prev') {
+      handlePrevious();
+    } else if (action.type === 'next') {
+      if (currentQuestionIndex < questions.length - 1) {
+        // Exam mode: save the selection first, like the card's own Next button does
+        if (quizMode === 'exam' && liveExamSelection.current.length > 0) {
+          const selection = [...liveExamSelection.current];
+          const questionId = currentQuestion.id;
+          setSelectedAnswers((prev) => new Map(prev).set(questionId, selection));
+        }
+        setCurrentQuestionIndex(currentQuestionIndex + 1);
+      }
+    }
+  }, questionScreenActive);
+
   const handleRestart = () => {
     setCurrentQuestionIndex(0);
     setUserAnswers(new Map());
     setSelectedAnswers(new Map());
     setQuizCompleted(false);
+    setSequentialProgress({}); // in-memory only; storage is kept
+    setCompletedOnQuestionId(null);
     setSelectedTopic(null);
     setQuizConfig(null);
     setQuestions([]);
@@ -255,8 +242,47 @@ function App() {
     setSelectedTopic(null);
   };
 
+  const allSequentialAnswered =
+    isSequential && progressCounts(questions, sequentialProgress).answered === totalQuestions;
+
+  const handleSequentialNext = () => {
+    if (allSequentialAnswered) {
+      if (currentQuestion.id === completedOnQuestionId) {
+        setQuizCompleted(true);
+      } else {
+        // Reviewing: step forward, wrapping from the last question to the first
+        setCurrentQuestionIndex(currentQuestionIndex < totalQuestions - 1 ? currentQuestionIndex + 1 : 0);
+      }
+    } else if (currentQuestionIndex < totalQuestions - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    } else {
+      // Last index with unanswered questions left: never a dead button
+      const firstUnanswered = questions.findIndex((q) => !isAnswered(sequentialProgress, q.id));
+      if (firstUnanswered !== -1) setCurrentQuestionIndex(firstUnanswered);
+    }
+  };
+
+  const handleSequentialReset = () => {
+    if (!selectedTopic) return;
+    if (window.confirm(`Reset all saved progress for "${selectedTopic.name}"? This cannot be undone.`)) {
+      resetProgress(selectedTopic.id);
+      setSequentialProgress({});
+      setCompletedOnQuestionId(null);
+      setResetGeneration((g) => g + 1);
+    }
+  };
+
   const generateSummary = (): QuizSummaryType => {
     const results = questions.map((q) => {
+      if (isSequential) {
+        const saved = sequentialProgress[q.id];
+        if (saved) {
+          return {
+            ...buildQuizResult(q, fromStoredSelection(saved.selection)),
+            isCorrect: saved.isCorrect,
+          };
+        }
+      }
       const answer = userAnswers.get(q.id);
       if (answer) {
         return answer;
@@ -363,7 +389,7 @@ function App() {
         </header>
 
         <main className="flex-1 py-6 px-4 max-w-6xl w-full mx-auto">
-          <QuizSummary summary={generateSummary()} onRestart={handleRestart} elapsedTime={formattedTime} />
+          <QuizSummary summary={generateSummary()} onRestart={handleRestart} elapsedTime={isSequential ? '—' : formattedTime} />
         </main>
 
         <footer className="bg-white py-3 px-4 text-center text-gray-600 text-xs border-t-2 border-gray-200 shadow-inner">
@@ -378,10 +404,14 @@ function App() {
       <header className="bg-primary py-2 px-6 text-center shadow-xl">
         <h1 className="text-2xl md:text-3xl font-extrabold m-0 tracking-tight text-primary-foreground">Quiz Maker</h1>
         <p className="mt-0 text-sm m-0 font-medium text-primary-foreground/90">{selectedTopic.name}</p>
-        <p className="mt-0.5 text-base m-0 font-mono font-bold text-primary-foreground">⏱️ {formattedTime}</p>
+        {!isSequential && (
+          <p className="mt-0.5 text-base m-0 font-mono font-bold text-primary-foreground">⏱️ {formattedTime}</p>
+        )}
       </header>
 
       <main className="flex-1 py-6 px-4 max-w-6xl w-full mx-auto">
+        <div className={isSequential ? 'flex flex-col lg:flex-row gap-6 lg:items-start' : undefined}>
+        <div className={isSequential ? 'flex-1 min-w-0' : undefined}>
         <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center mb-6 gap-4">
           <Badge variant="secondary" className="text-xl font-bold px-5 py-3 shadow-sm">
             Question {currentQuestionIndex + 1} of {totalQuestions}
@@ -409,14 +439,34 @@ function App() {
         </div>
 
         <QuestionCard
-          key={currentQuestion.id}
+          key={`${currentQuestion.id}:${resetGeneration}`}
           question={currentQuestion}
           onAnswerSubmit={handleAnswerSubmit}
-          onNext={handleNext}
-          isLastQuestion={currentQuestionIndex === totalQuestions - 1}
+          onNext={isSequential ? handleSequentialNext : handleNext}
+          isLastQuestion={isSequential ? allSequentialAnswered && currentQuestion.id === completedOnQuestionId : currentQuestionIndex === totalQuestions - 1}
           mode={quizMode}
+          onSelectionChange={handleExamSelectionChange}
           previousSelection={selectedAnswers.get(currentQuestion.id)}
+          lockedSelection={
+            isSequential && isAnswered(sequentialProgress, currentQuestion.id)
+              ? fromStoredSelection(sequentialProgress[currentQuestion.id].selection)
+              : undefined
+          }
         />
+        </div>
+        {isSequential && (
+          <aside className="lg:w-64 lg:shrink-0">
+            <QuestionNavigator
+              questions={questions}
+              currentIndex={currentQuestionIndex}
+              progress={sequentialProgress}
+              onJump={setCurrentQuestionIndex}
+              onReset={handleSequentialReset}
+              onViewResults={() => setQuizCompleted(true)}
+            />
+          </aside>
+        )}
+        </div>
       </main>
     </div>
   );

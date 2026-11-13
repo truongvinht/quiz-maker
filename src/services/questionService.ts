@@ -13,16 +13,23 @@ const questionFiles = import.meta.glob<Question[]>(
 );
 
 /**
- * Load questions from a specific topic file and randomize their order
+ * Load a topic's question bank in file order (unshuffled)
  */
-export async function loadQuestions(fileName: string): Promise<Question[]> {
+async function loadQuestionBank(fileName: string): Promise<Question[]> {
   const name = fileName.endsWith('.json') ? fileName : `${fileName}.json`;
   const loader =
     questionFiles[`../data/${name}`] ?? questionFiles[`../data/private/${name}`];
   if (!loader) {
     throw new Error(`Question file not found: ${name}`);
   }
-  return shuffleArray(await loader());
+  return [...(await loader())];
+}
+
+/**
+ * Load questions from a specific topic file and randomize their order
+ */
+export async function loadQuestions(fileName: string): Promise<Question[]> {
+  return shuffleArray(await loadQuestionBank(fileName));
 }
 
 /**
@@ -64,4 +71,12 @@ export async function loadRandomizedQuiz(
   }
 
   return selectedQuestions.map(randomizeAnswerOptions);
+}
+
+/**
+ * Load the whole question bank in file order, with answer options randomized
+ */
+export async function loadSequentialQuiz(fileName: string): Promise<Question[]> {
+  const questions = await loadQuestionBank(fileName);
+  return questions.map(randomizeAnswerOptions);
 }

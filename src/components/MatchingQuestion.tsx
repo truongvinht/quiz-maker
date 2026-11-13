@@ -8,16 +8,20 @@ interface MatchingQuestionProps {
   matchingOptions: string[];
   onSubmit: (selectedAnswers: Map<number, string>, isCorrect: boolean) => void;
   disabled?: boolean;
+  initialAnswers?: Map<number, string>;
 }
 
 export default function MatchingQuestion({
   scenarios,
   matchingOptions,
   onSubmit,
-  disabled = false
+  disabled = false,
+  initialAnswers
 }: MatchingQuestionProps) {
-  const [selectedAnswers, setSelectedAnswers] = useState<Map<number, string>>(new Map());
-  const [submitted, setSubmitted] = useState(false);
+  const [selectedAnswers, setSelectedAnswers] = useState<Map<number, string>>(
+    () => new Map(initialAnswers ?? [])
+  );
+  const [submitted, setSubmitted] = useState(initialAnswers !== undefined);
 
   const handleScenarioChange = (scenarioId: number, value: string) => {
     if (submitted) return;

@@ -44,17 +44,17 @@
 **Interfaces:**
 - Produces: `buildQuizResult(question: Question, selection: string[] | Map<number, string> | undefined): QuizResult`. It computes `isCorrect` and the answer texts for standard, ordering and matching questions exactly as `handleExamSubmit` does today. `undefined` gives an empty answer with `isCorrect: false`.
 
-- [ ] **Step 1:** `npm install -D vitest@^4` and add the `test` script. Run `npm test`. Expected: "No test files found" (exit code non-zero is fine here).
-- [ ] **Step 2: Write failing tests** in `src/lib/quizResult.test.ts` using inline fixture questions:
+- [x] **Step 1:** `npm install -D vitest@^4` and add the `test` script. Run `npm test`. Expected: "No test files found" (exit code non-zero is fine here).
+- [x] **Step 2: Write failing tests** in `src/lib/quizResult.test.ts` using inline fixture questions:
   - `standard correct`: options `a,b,c`, `correctAnswers ['b']`, selection `['b']`. Expect `isCorrect true`, `userAnswerTexts` = text of `b`.
   - `standard multi wrong`: `correctAnswers ['a','c']`, selection `['a']`. Expect `isCorrect false`.
   - `ordering correct`: steps 1,2 with correct `X`,`Y`, selection `new Map([[1,'X'],[2,'Y']])`. Expect `isCorrect true`, `userAnswerTexts ['Step 1: X','Step 2: Y']`, `correctAnswerTexts ['Step 1: X','Step 2: Y']`.
   - `matching wrong`: scenarios 1,2 correct `P`,`Q`, selection `Map([[1,'P'],[2,'P']])`. Expect `isCorrect false`, `userAnswerTexts ['Scenario 1: P','Scenario 2: P']`.
   - `no answer`: selection `undefined`. Expect `userAnswers []`, `isCorrect false`, `correctAnswerTexts` filled in.
-- [ ] **Step 3:** Run `npm test`. Expected: FAIL, module not found.
-- [ ] **Step 4:** Implement `buildQuizResult` by moving the per-question body of `handleExamSubmit` (`src/App.tsx`) into it. Then make `handleExamSubmit` call it in a loop.
-- [ ] **Step 5:** Run `npm test` and `npm run build`. Expected: all pass and the build succeeds.
-- [ ] **Step 6:** Lint and commit (Global Constraints).
+- [x] **Step 3:** Run `npm test`. Expected: FAIL, module not found.
+- [x] **Step 4:** Implement `buildQuizResult` by moving the per-question body of `handleExamSubmit` (`src/App.tsx`) into it. Then make `handleExamSubmit` call it in a loop.
+- [x] **Step 5:** Run `npm test` and `npm run build`. Expected: all pass and the build succeeds.
+- [x] **Step 6:** Lint and commit (Global Constraints).
 
 ### Task 2: Progress storage module
 
@@ -88,7 +88,7 @@
   ```
 - `saveAnswer` is pure with a best-effort write. It returns a **new** object with the answer added, or the **same** object unchanged if `questionId` is already present. Storage errors are caught and ignored.
 
-- [ ] **Step 1: Write failing tests** with an in-memory fake `ProgressStorage` (a `Map`), plus a throwing fake whose methods all `throw new Error('denied')`:
+- [x] **Step 1: Write failing tests** with an in-memory fake `ProgressStorage` (a `Map`), plus a throwing fake whose methods all `throw new Error('denied')`:
   - `progressKey('aws-basics') === 'quiz-maker:sequential:aws-basics'`
   - round trip: `fromStoredSelection(toStoredSelection(['a','b']))` deep-equals `['a','b']`, and `Map([[1,'X']])` round-trips to an equal `Map`.
   - `loadProgress` returns `{}` for a missing key, for `'not json'`, for `'[1,2]'`, and for entries missing `isCorrect`. Valid entries next to invalid ones are kept.
@@ -99,10 +99,10 @@
   - `squareStatus` gives `'unanswered'`, `'correct'` and `'wrong'`.
   - `progressCounts` for questions `[1,2,3]` with saved `{2: correct, 3: wrong, 99: correct}` gives `{total:3, answered:2, correct:1, wrong:1}`. Id 99 is ignored. *(Review Focus 2)*
   - `findDuplicateIds([{id:'1'},{id:'2'},{id:'1'}])` gives `['1']`.
-- [ ] **Step 2:** Run `npm test`. Expected: FAIL, module not found.
-- [ ] **Step 3:** Implement the module. Validate each stored entry's shape when loading and drop bad ones.
-- [ ] **Step 4:** Run `npm test`. Expected: PASS.
-- [ ] **Step 5:** Lint and commit.
+- [x] **Step 2:** Run `npm test`. Expected: FAIL, module not found.
+- [x] **Step 3:** Implement the module. Validate each stored entry's shape when loading and drop bad ones.
+- [x] **Step 4:** Run `npm test`. Expected: PASS.
+- [x] **Step 5:** Lint and commit.
 
 ### Task 3: Keyboard shortcut resolution and hook
 
@@ -123,17 +123,17 @@
   ```
 - `useKeyboardShortcut` adds a `keydown` listener on `window` while `enabled`. It calls `onAction` for non-null results and calls `preventDefault()` only in that case. It keeps the latest `onAction` in a ref so the listener isn't re-attached on every render.
 
-- [ ] **Step 1: Write failing tests** for `resolveShortcut`:
+- [x] **Step 1: Write failing tests** for `resolveShortcut`:
   - `'a'` gives `prev`, `'d'` gives `next`, `'A'` with `shiftKey:false` (Caps Lock) gives `prev`. *(Review Focus 4)*
   - `'1'` gives `{option, index 0}` and `'9'` gives index 8. `'0'` gives `null`.
   - any of `metaKey`/`ctrlKey`/`altKey`/`shiftKey` true gives `null` (e.g. Shift+A, Cmd+D). *(Review Focus 4)*
   - target `{tagName:'SELECT'}`, `'INPUT'`, `'TEXTAREA'` or `{isContentEditable:true}` gives `null` for `'a'` and `'1'`. *(Review Focus 4)*
   - target `{tagName:'BUTTON'}` and `null` still resolve.
   - other keys (`'x'`, `'Enter'`) give `null`.
-- [ ] **Step 2:** Run `npm test`. Expected: FAIL.
-- [ ] **Step 3:** Implement `resolveShortcut` and `useKeyboardShortcut`.
-- [ ] **Step 4:** Run `npm test`. Expected: PASS.
-- [ ] **Step 5:** Lint and commit.
+- [x] **Step 2:** Run `npm test`. Expected: FAIL.
+- [x] **Step 3:** Implement `resolveShortcut` and `useKeyboardShortcut`.
+- [x] **Step 4:** Run `npm test`. Expected: PASS.
+- [x] **Step 5:** Lint and commit.
 
 ### Task 4: Unshuffled question loading
 
@@ -144,11 +144,11 @@
 **Interfaces:**
 - Produces: `loadSequentialQuiz(fileName: string): Promise<Question[]>`. It returns the whole bank in file order, with `randomizeAnswerOptions` applied to each question. `loadQuestions` and `loadRandomizedQuiz` keep their current shuffling behaviour. Share the glob lookup through a private `loadQuestionBank(fileName)` that returns the bank unshuffled.
 
-- [ ] **Step 1: Write failing tests:** `loadSequentialQuiz('aws-basics.json')` returns ids `['1','2','3','4']` in order. Sorted option ids per question are `['a','b','c','d']`, `['a','b','c','d','e']`, `['a','b','c','d']`, and Q4 (ordering) has no `options`. Hard-code these values. Don't import the JSON in the test, because `resolveJsonModule` is not enabled in `tsconfig.app.json`. `loadSequentialQuiz('nope.json')` rejects with `Question file not found`.
-- [ ] **Step 2:** Run `npm test`. Expected: FAIL.
-- [ ] **Step 3:** Implement as described.
-- [ ] **Step 4:** Run `npm test`. Expected: PASS.
-- [ ] **Step 5:** Lint and commit.
+- [x] **Step 1: Write failing tests:** `loadSequentialQuiz('aws-basics.json')` returns ids `['1','2','3','4']` in order. Sorted option ids per question are `['a','b','c','d']`, `['a','b','c','d','e']`, `['a','b','c','d']`, and Q4 (ordering) has no `options`. Hard-code these values. Don't import the JSON in the test, because `resolveJsonModule` is not enabled in `tsconfig.app.json`. `loadSequentialQuiz('nope.json')` rejects with `Question file not found`.
+- [x] **Step 2:** Run `npm test`. Expected: FAIL.
+- [x] **Step 3:** Implement as described.
+- [x] **Step 4:** Run `npm test`. Expected: PASS.
+- [x] **Step 5:** Lint and commit.
 
 ### Task 5: Locked answers and number keys in question components
 
@@ -168,10 +168,10 @@
 
 There's no component test setup (no DOM library). Verification is a type check plus a manual run.
 
-- [ ] **Step 1:** Implement the props and behaviour above.
-- [ ] **Step 2:** Run `npm run build` and `npm test`. Expected: success.
+- [x] **Step 1:** Implement the props and behaviour above.
+- [x] **Step 2:** Run `npm run build` and `npm test`. Expected: success.
 - [ ] **Step 3: Manual check** with `npm run dev` in Training and Exam mode (Sequential isn't wired yet). On a single-choice question, `2` selects the second option shown. On a multi-choice question, `1` toggles the first option on and off. After "Check Answer", digits do nothing. On an ordering question, digits do nothing and "Try Again" is still there in Training.
-- [ ] **Step 4:** Lint and commit.
+- [x] **Step 4:** Lint and commit.
 
 ### Task 6: QuestionNavigator component
 
@@ -194,9 +194,9 @@ There's no component test setup (no DOM library). Verification is a type check p
 - Layout follows mockup B: a heading, a counts line `"{answered} / {total} answered · {correct} ✓ · {wrong} ✗"`, a 5-column grid of square buttons labelled `1..N` (`aria-label="Question N, <status>"`) that scrolls when tall, a `View results` button, and a `Reset progress` button styled in red outline. White, green (`bg-green-500`) and red (`bg-red-500`) squares, current one with `ring-2 ring-blue-600`.
 - Small screens: below Tailwind `lg`, render a `Questions ▾` toggle button that shows or hides the panel. At `lg` and up the panel is always shown.
 
-- [ ] **Step 1:** Implement the component.
-- [ ] **Step 2:** Run `npm run build`. Expected: success. (The component is first seen on screen in Task 7.)
-- [ ] **Step 3:** Lint and commit.
+- [x] **Step 1:** Implement the component.
+- [x] **Step 2:** Run `npm run build`. Expected: success. (The component is first seen on screen in Task 7.)
+- [x] **Step 3:** Lint and commit.
 
 ### Task 7: Configuration card and App wiring
 
@@ -225,9 +225,9 @@ There's no component test setup (no DOM library). Verification is a type check p
 **App (all modes):**
 - `useKeyboardShortcut` on the question screen (enabled when not loading and not completed). `prev` calls `handlePrevious`. `next` moves to `currentQuestionIndex + 1` **only if** it isn't the last question, and never calls `handleNext`/`handleExamSubmit`. *(Review Focus 5)*
 
-- [ ] **Step 1:** Implement QuizConfiguration changes.
-- [ ] **Step 2:** Implement the App changes.
-- [ ] **Step 3:** Run `npm run build` and `npm test`. Expected: success.
+- [x] **Step 1:** Implement QuizConfiguration changes.
+- [x] **Step 2:** Implement the App changes.
+- [x] **Step 3:** Run `npm run build` and `npm test`. Expected: success.
 - [ ] **Step 4: Manual check** (`npm run dev`, topic AWS Basics):
   - Sequential card shown and range inputs hidden. Questions appear in file order 1–4, with options shuffled between reloads.
   - Answer Q1 right (green) and Q2 wrong (red). Reload the page and re-enter: colours are still there, and it opens on Q3.
@@ -237,4 +237,4 @@ There's no component test setup (no DOM library). Verification is a type check p
   - A/D move between questions in all three modes. On the last Exam question, D does nothing and the exam is not submitted. Shift+D and Cmd+D do nothing.
   - Narrow the window below `lg`: the `Questions ▾` toggle appears and works.
   - DevTools → block storage (or Safari private window): the mode still works within the session.
-- [ ] **Step 5:** Lint and commit.
+- [x] **Step 5:** Lint and commit.
