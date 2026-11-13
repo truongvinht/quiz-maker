@@ -182,7 +182,7 @@ export default function QuestionCard({
     : 0;
 
   return (
-    <Card className="max-w-4xl mx-auto transition-all duration-500 hover:shadow-2xl">
+    <Card className="max-w-4xl mx-auto">
       <CardHeader className="space-y-6">
         {/* Progress bar */}
         {!submitted && !isOrderingQuestion && !isMatchingQuestion && selectedOptions.length > 0 && (
