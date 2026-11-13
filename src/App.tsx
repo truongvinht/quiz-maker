@@ -21,8 +21,11 @@ import {
 } from './lib/sequentialProgress';
 import { useKeyboardShortcut } from './lib/keyboardShortcuts';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import type { QuizResult, QuizSummary as QuizSummaryType, Question, QuizTopic, QuizConfig, QuizMode } from './types/quiz';
+
+// Previous/Next in the dark question-screen header: light outline instead of the default white fill.
+const HEADER_NAV_BUTTON_CLASSES =
+  'bg-transparent border-primary-foreground/40 text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground px-3 sm:px-4';
 
 function App() {
   const [selectedTopic, setSelectedTopic] = useState<QuizTopic | null>(null);
@@ -401,43 +404,49 @@ function App() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
-      <header className="bg-primary py-2 px-6 text-center shadow-xl">
-        <h1 className="text-2xl md:text-3xl font-extrabold m-0 tracking-tight text-primary-foreground">Quiz Maker</h1>
-        <p className="mt-0 text-sm m-0 font-medium text-primary-foreground/90">{selectedTopic.name}</p>
-        {!isSequential && (
-          <p className="mt-0.5 text-base m-0 font-mono font-bold text-primary-foreground">⏱️ {formattedTime}</p>
-        )}
+      {/* Question screen: "Question x of y" on the left, title in the middle, Previous/Next on
+          the right. On phones the buttons show only their arrows so all three fit in one row. */}
+      <header className="bg-primary py-2 px-3 sm:px-6 shadow-xl grid grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-4">
+        <p className="m-0 justify-self-start text-sm sm:text-lg font-bold text-primary-foreground">
+          Question{' '}
+          <span className="whitespace-nowrap">
+            {currentQuestionIndex + 1} of {totalQuestions}
+          </span>
+        </p>
+        <div className="text-center min-w-0">
+          <h1 className="text-2xl md:text-3xl font-extrabold m-0 tracking-tight text-primary-foreground">Quiz Maker</h1>
+          <p className="mt-0 text-sm m-0 font-medium text-primary-foreground/90">{selectedTopic.name}</p>
+          {!isSequential && (
+            <p className="mt-0.5 text-base m-0 font-mono font-bold text-primary-foreground">⏱️ {formattedTime}</p>
+          )}
+        </div>
+        <div className="flex justify-self-end gap-2 sm:gap-3">
+          <Button
+            variant="outline"
+            onClick={handlePrevious}
+            disabled={currentQuestionIndex === 0}
+            className={HEADER_NAV_BUTTON_CLASSES}
+            aria-label="Go to previous question"
+          >
+            <span aria-hidden="true">←</span>
+            <span className="hidden sm:inline">Previous</span>
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleNext}
+            disabled={currentQuestionIndex === totalQuestions - 1}
+            className={HEADER_NAV_BUTTON_CLASSES}
+            aria-label="Go to next question"
+          >
+            <span className="hidden sm:inline">Next</span>
+            <span aria-hidden="true">→</span>
+          </Button>
+        </div>
       </header>
 
       <main className="flex-1 py-6 px-4 max-w-6xl w-full mx-auto">
         <div className={isSequential ? 'flex flex-col lg:flex-row gap-6 lg:items-start' : undefined}>
         <div className={isSequential ? 'flex-1 min-w-0' : undefined}>
-        <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center mb-6 gap-4">
-          <Badge variant="secondary" className="text-xl font-bold px-5 py-3 shadow-sm">
-            Question {currentQuestionIndex + 1} of {totalQuestions}
-          </Badge>
-          <div className="flex gap-3">
-            <Button
-              variant="outline"
-              onClick={handlePrevious}
-              disabled={currentQuestionIndex === 0}
-              className="flex-1 sm:flex-none transition-all hover:scale-105"
-              aria-label="Go to previous question"
-            >
-              ← Previous
-            </Button>
-            <Button
-              variant="outline"
-              onClick={handleNext}
-              disabled={currentQuestionIndex === totalQuestions - 1}
-              className="flex-1 sm:flex-none transition-all hover:scale-105"
-              aria-label="Go to next question"
-            >
-              Next →
-            </Button>
-          </div>
-        </div>
-
         <QuestionCard
           key={`${currentQuestion.id}:${resetGeneration}`}
           question={currentQuestion}
