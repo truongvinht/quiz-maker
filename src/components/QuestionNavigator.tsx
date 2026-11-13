@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { Question } from '@/types/quiz';
@@ -33,8 +33,26 @@ export default function QuestionNavigator({
   onViewResults,
 }: QuestionNavigatorProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const gridRef = useRef<HTMLDivElement>(null);
   const { total, answered, correct, wrong } = progressCounts(questions, progress);
   const showViewResults = total > 0 && answered === total;
+
+  // Keep the current square visible inside the grid. Only the grid's own scrollTop is
+  // set (scrollIntoView could also scroll the window), so the page never jumps.
+  useEffect(() => {
+    const grid = gridRef.current;
+    const square = grid?.querySelector<HTMLElement>('[aria-current="true"]');
+    if (!grid || !square || grid.clientHeight === 0) return; // hidden panel: nothing to measure
+    const gridRect = grid.getBoundingClientRect();
+    const squareRect = square.getBoundingClientRect();
+    const top = squareRect.top - gridRect.top + grid.scrollTop;
+    const bottom = top + squareRect.height;
+    if (top < grid.scrollTop) {
+      grid.scrollTop = top;
+    } else if (bottom > grid.scrollTop + grid.clientHeight) {
+      grid.scrollTop = bottom - grid.clientHeight;
+    }
+  }, [currentIndex]);
 
   return (
     <div>
@@ -60,7 +78,7 @@ export default function QuestionNavigator({
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid max-h-80 grid-cols-5 gap-2 overflow-y-auto p-1">
+          <div ref={gridRef} className="grid max-h-80 grid-cols-5 gap-2 overflow-y-auto p-1">
             {questions.map((q, index) => {
               const status = squareStatus(progress, q.id);
               const isCurrent = index === currentIndex;
