@@ -6,7 +6,7 @@ export interface ShortcutEventLike {
   ctrlKey: boolean;
   altKey: boolean;
   shiftKey: boolean;
-  target: { tagName?: string; isContentEditable?: boolean } | null;
+  target: { tagName?: string; isContentEditable?: boolean; type?: string } | null;
 }
 
 export type ShortcutAction =
@@ -16,13 +16,20 @@ export type ShortcutAction =
   | null;
 
 const TYPING_TAGS = new Set(['INPUT', 'TEXTAREA', 'SELECT']);
+// Inputs of these types take no typed text, so they must not block shortcuts
+const NON_TYPING_INPUT_TYPES = new Set(['checkbox', 'radio', 'button', 'submit', 'reset']);
 
 /** Maps a key event to a quiz action. `index` for options is 0-based ('1' -> 0). */
 export const resolveShortcut = (e: ShortcutEventLike): ShortcutAction => {
   if (e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) return null;
   if (e.target) {
     if (e.target.isContentEditable) return null;
-    if (e.target.tagName && TYPING_TAGS.has(e.target.tagName.toUpperCase())) return null;
+    const tag = e.target.tagName?.toUpperCase();
+    if (tag && TYPING_TAGS.has(tag)) {
+      const isNonTypingInput =
+        tag === 'INPUT' && NON_TYPING_INPUT_TYPES.has((e.target.type ?? '').toLowerCase());
+      if (!isNonTypingInput) return null;
+    }
   }
   const key = e.key.toLowerCase();
   if (key === 'a') return { type: 'prev' };
@@ -51,7 +58,14 @@ export const useKeyboardShortcut = (
         ctrlKey: e.ctrlKey,
         altKey: e.altKey,
         shiftKey: e.shiftKey,
-        target: e.target instanceof HTMLElement ? e.target : null,
+        target:
+          e.target instanceof HTMLElement
+            ? {
+                tagName: e.target.tagName,
+                isContentEditable: e.target.isContentEditable,
+                type: e.target instanceof HTMLInputElement ? e.target.type : undefined,
+              }
+            : null,
       });
       if (!action) return;
       e.preventDefault();

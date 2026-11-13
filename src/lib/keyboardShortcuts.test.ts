@@ -42,6 +42,21 @@ describe('resolveShortcut', () => {
     }
   });
 
+  it('does not treat checkbox/radio inputs as typing targets', () => {
+    expect(resolveShortcut(ev({ key: 'a', target: { tagName: 'INPUT', type: 'radio' } }))).toEqual({
+      type: 'prev',
+    });
+    expect(resolveShortcut(ev({ key: '1', target: { tagName: 'INPUT', type: 'checkbox' } }))).toEqual({
+      type: 'option',
+      index: 0,
+    });
+  });
+
+  it('still ignores text-like and untyped inputs', () => {
+    expect(resolveShortcut(ev({ key: 'a', target: { tagName: 'INPUT', type: 'text' } }))).toBeNull();
+    expect(resolveShortcut(ev({ key: 'a', target: { tagName: 'INPUT' } }))).toBeNull();
+  });
+
   it('still resolves on buttons and null targets', () => {
     expect(resolveShortcut(ev({ key: 'd', target: { tagName: 'BUTTON' } }))).toEqual({ type: 'next' });
     expect(resolveShortcut(ev({ key: 'd', target: null }))).toEqual({ type: 'next' });
