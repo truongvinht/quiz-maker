@@ -110,6 +110,26 @@ describe('saveAnswer', () => {
   it('still returns the merged object when storage throws', () => {
     expect(saveAnswer('t', {}, 'q1', correct, throwingStorage)).toEqual({ q1: correct });
   });
+  it('keeps answers another tab saved', () => {
+    const s = memoryStorage();
+    s.setItem(progressKey('t'), JSON.stringify({ '2': wrong }));
+    const next = saveAnswer('t', { '1': correct }, '3', correct, s);
+    expect(next).toEqual({ '1': correct, '2': wrong, '3': correct });
+    expect(loadProgress('t', s)).toEqual({ '1': correct, '2': wrong, '3': correct });
+  });
+  it('lets the stored answer win over a new one for the same id', () => {
+    const s = memoryStorage();
+    s.setItem(progressKey('t'), JSON.stringify({ '3': wrong }));
+    const next = saveAnswer('t', {}, '3', correct, s);
+    expect(next).toEqual({ '3': wrong });
+    expect(loadProgress('t', s)).toEqual({ '3': wrong });
+  });
+  it('returns in-memory plus the new answer when storage throws', () => {
+    expect(saveAnswer('t', { '1': correct }, '2', wrong, throwingStorage)).toEqual({
+      '1': correct,
+      '2': wrong,
+    });
+  });
 });
 
 describe('resetProgress', () => {

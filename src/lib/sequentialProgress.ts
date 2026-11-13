@@ -98,14 +98,21 @@ export function saveAnswer(
   answer: SavedAnswer,
   storage: ProgressStorage | null = defaultStorage(),
 ): SequentialProgress {
-  if (has(progress, questionId)) return progress;
-  const next = { ...progress, [questionId]: answer };
+  // Re-read storage: another tab may have saved answers this tab doesn't know about.
+  // Answers are final, so on a clash the stored entry wins.
+  const stored = loadProgress(topicId, storage);
+  const merged: SequentialProgress = { ...progress, ...stored };
+  const storedAddsNothing = Object.keys(stored).every(
+    (id) => has(progress, id) && JSON.stringify(progress[id]) === JSON.stringify(stored[id]),
+  );
+  if (has(merged, questionId) && storedAddsNothing) return progress;
+  if (!has(merged, questionId)) merged[questionId] = answer;
   try {
-    storage?.setItem(progressKey(topicId), JSON.stringify(next));
+    storage?.setItem(progressKey(topicId), JSON.stringify(merged));
   } catch {
     // best effort: progress stays in memory for this session
   }
-  return next;
+  return merged;
 }
 
 export function resetProgress(
