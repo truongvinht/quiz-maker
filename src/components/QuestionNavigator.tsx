@@ -52,7 +52,7 @@ export default function QuestionNavigator({
     } else if (bottom > grid.scrollTop + grid.clientHeight) {
       grid.scrollTop = bottom - grid.clientHeight;
     }
-  }, [currentIndex]);
+  }, [currentIndex, isOpen]);
 
   return (
     <div>

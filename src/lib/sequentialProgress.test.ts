@@ -124,6 +124,21 @@ describe('saveAnswer', () => {
     expect(next).toEqual({ '3': wrong });
     expect(loadProgress('t', s)).toEqual({ '3': wrong });
   });
+  it('lets a different stored entry win for an id already in memory', () => {
+    const s = memoryStorage();
+    s.setItem(progressKey('t'), JSON.stringify({ '1': wrong }));
+    const next = saveAnswer('t', { '1': correct }, '1', correct, s);
+    expect(next).toEqual({ '1': wrong });
+    expect(loadProgress('t', s)).toEqual({ '1': wrong });
+  });
+  it('returns a new object when stored adds another id', () => {
+    const s = memoryStorage();
+    s.setItem(progressKey('t'), JSON.stringify({ '2': wrong }));
+    const progress: SequentialProgress = { '1': correct };
+    const next = saveAnswer('t', progress, '1', correct, s);
+    expect(next).not.toBe(progress);
+    expect(next).toEqual({ '1': correct, '2': wrong });
+  });
   it('returns in-memory plus the new answer when storage throws', () => {
     expect(saveAnswer('t', { '1': correct }, '2', wrong, throwingStorage)).toEqual({
       '1': correct,
