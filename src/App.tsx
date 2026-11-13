@@ -15,6 +15,7 @@ import {
   toStoredSelection,
   fromStoredSelection,
   progressCounts,
+  isAnswered,
   findDuplicateIds,
   type SequentialProgress,
 } from './lib/sequentialProgress';
@@ -60,7 +61,7 @@ function App() {
               console.warn('Duplicate question ids in sequential quiz:', duplicates);
             }
             const progress = loadProgress(selectedTopic.id);
-            const firstUnanswered = loadedQuestions.findIndex((q) => !(q.id in progress));
+            const firstUnanswered = loadedQuestions.findIndex((q) => !isAnswered(progress, q.id));
             setSequentialProgress(progress);
             setCurrentQuestionIndex(firstUnanswered === -1 ? 0 : firstUnanswered);
             setQuestions(loadedQuestions);
@@ -88,7 +89,7 @@ function App() {
   const handleAnswerSubmit = (selectedOptions: string[] | Map<number, string>, isCorrect: boolean) => {
     // Sequential mode: answers are final; persist once per question
     if (quizMode === 'sequential') {
-      if (!selectedTopic || currentQuestion.id in sequentialProgress) return;
+      if (!selectedTopic || isAnswered(sequentialProgress, currentQuestion.id)) return;
       setSequentialProgress(
         saveAnswer(selectedTopic.id, sequentialProgress, currentQuestion.id, {
           selection: toStoredSelection(selectedOptions),
@@ -234,7 +235,7 @@ function App() {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
       // Last index with unanswered questions left: never a dead button
-      const firstUnanswered = questions.findIndex((q) => !(q.id in sequentialProgress));
+      const firstUnanswered = questions.findIndex((q) => !isAnswered(sequentialProgress, q.id));
       if (firstUnanswered !== -1) setCurrentQuestionIndex(firstUnanswered);
     }
   };
@@ -423,7 +424,7 @@ function App() {
           mode={quizMode}
           previousSelection={selectedAnswers.get(currentQuestion.id)}
           lockedSelection={
-            isSequential && currentQuestion.id in sequentialProgress
+            isSequential && isAnswered(sequentialProgress, currentQuestion.id)
               ? fromStoredSelection(sequentialProgress[currentQuestion.id].selection)
               : undefined
           }

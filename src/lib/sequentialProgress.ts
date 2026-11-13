@@ -119,6 +119,10 @@ export function resetProgress(
   }
 }
 
+export function isAnswered(progress: SequentialProgress, questionId: string): boolean {
+  return has(progress, questionId);
+}
+
 export function squareStatus(progress: SequentialProgress, questionId: string): SquareStatus {
   if (!has(progress, questionId)) return 'unanswered';
   return progress[questionId].isCorrect ? 'correct' : 'wrong';

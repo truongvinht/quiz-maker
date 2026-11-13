@@ -7,6 +7,7 @@ import {
   saveAnswer,
   resetProgress,
   squareStatus,
+  isAnswered,
   progressCounts,
   findDuplicateIds,
 } from './sequentialProgress';
@@ -129,6 +130,14 @@ describe('squareStatus', () => {
     expect(squareStatus(p, 'none')).toBe('unanswered');
     expect(squareStatus(p, 'c')).toBe('correct');
     expect(squareStatus(p, 'w')).toBe('wrong');
+  });
+});
+
+describe('isAnswered', () => {
+  it('uses own keys only', () => {
+    expect(isAnswered({ q1: correct }, 'q1')).toBe(true);
+    expect(isAnswered({ q1: correct }, 'q2')).toBe(false);
+    expect(isAnswered({}, 'toString')).toBe(false);
   });
 });
 
