@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useKeyboardShortcut } from '../lib/keyboardShortcuts';
 import { buildQuizResult } from '../lib/quizResult';
 import type { Question, QuizMode } from '../types/quiz';
@@ -19,6 +19,8 @@ interface QuestionCardProps {
   mode?: QuizMode;
   previousSelection?: string[] | Map<number, string>;
   lockedSelection?: string[] | Map<number, string>;
+  /** Exam mode: reports the live standard-question selection so the parent can save it when the D key moves on. */
+  onSelectionChange?: (selectedOptions: string[]) => void;
 }
 
 export default function QuestionCard({
@@ -28,7 +30,8 @@ export default function QuestionCard({
   isLastQuestion = false,
   mode = 'training',
   previousSelection,
-  lockedSelection
+  lockedSelection,
+  onSelectionChange
 }: QuestionCardProps) {
   const checksImmediately = mode !== 'exam';
   const isLocked = lockedSelection !== undefined;
@@ -49,6 +52,10 @@ export default function QuestionCard({
   const [mapSelection, setMapSelection] = useState<Map<number, string> | undefined>(
     lockedSelection instanceof Map ? lockedSelection : undefined,
   );
+
+  useEffect(() => {
+    if (mode === 'exam') onSelectionChange?.(selectedOptions);
+  }, [mode, selectedOptions, onSelectionChange]);
 
   const isOrderingQuestion = question.questionType === 'ordering';
   const isMatchingQuestion = question.questionType === 'matching';

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import QuestionCard from './components/QuestionCard';
 import QuizSummary from './components/QuizSummary';
 import TopicSelection from './components/TopicSelection';
@@ -39,6 +39,12 @@ function App() {
   const [sequentialProgress, setSequentialProgress] = useState<SequentialProgress>({});
   // Bumped on sequential reset so the current QuestionCard remounts with fresh state
   const [resetGeneration, setResetGeneration] = useState(0);
+
+  // Exam mode: the current card's live selection, saved when D moves on
+  const liveExamSelection = useRef<string[]>([]);
+  const handleExamSelectionChange = useCallback((selected: string[]) => {
+    liveExamSelection.current = selected;
+  }, []);
 
   const { formattedTime, reset: resetTimer } = useTimer(quizStarted && !quizCompleted);
 
@@ -194,6 +200,12 @@ function App() {
       handlePrevious();
     } else if (action.type === 'next') {
       if (currentQuestionIndex < questions.length - 1) {
+        // Exam mode: save the selection first, like the card's own Next button does
+        if (quizMode === 'exam' && liveExamSelection.current.length > 0) {
+          const selection = [...liveExamSelection.current];
+          const questionId = currentQuestion.id;
+          setSelectedAnswers((prev) => new Map(prev).set(questionId, selection));
+        }
         setCurrentQuestionIndex(currentQuestionIndex + 1);
       }
     }
@@ -422,6 +434,7 @@ function App() {
           onNext={isSequential ? handleSequentialNext : handleNext}
           isLastQuestion={isSequential ? allSequentialAnswered : currentQuestionIndex === totalQuestions - 1}
           mode={quizMode}
+          onSelectionChange={handleExamSelectionChange}
           previousSelection={selectedAnswers.get(currentQuestion.id)}
           lockedSelection={
             isSequential && isAnswered(sequentialProgress, currentQuestion.id)
