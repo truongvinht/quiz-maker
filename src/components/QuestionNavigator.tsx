@@ -18,6 +18,9 @@ interface QuestionNavigatorProps {
   onViewResults: () => void; // button only rendered when every question is answered
 }
 
+const WINDOW_MARGIN_PX = 16; // gap kept below the card, matches the sticky top-4 offset
+const MIN_CARD_HEIGHT_PX = 240; // keep header, a few rows and the buttons usable in tiny windows
+
 const STATUS_CLASSES: Record<SquareStatus, string> = {
   unanswered: 'bg-white text-foreground border-border hover:bg-muted',
   correct: 'bg-green-500 text-white border-green-600',
@@ -34,6 +37,7 @@ export default function QuestionNavigator({
 }: QuestionNavigatorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const gridRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
   const { total, answered, correct, wrong } = progressCounts(questions, progress);
   const showViewResults = total > 0 && answered === total;
 
@@ -54,6 +58,38 @@ export default function QuestionNavigator({
     }
   }, [currentIndex, isOpen]);
 
+  // Large screens: cap the card at the space between its top edge and the bottom of the
+  // window, so it fills the window without being cut off before it sticks. The page scrolls
+  // inside <body> (see index.css), so scroll events are caught in the capture phase.
+  useEffect(() => {
+    const card = cardRef.current;
+    if (!card) return;
+    const largeScreen = window.matchMedia('(min-width: 1024px)');
+    let frame = 0;
+    const fit = () => {
+      frame = 0;
+      if (!largeScreen.matches) {
+        card.style.maxHeight = '';
+        return;
+      }
+      const room = window.innerHeight - card.getBoundingClientRect().top - WINDOW_MARGIN_PX;
+      card.style.maxHeight = `${Math.max(room, MIN_CARD_HEIGHT_PX)}px`;
+    };
+    const schedule = () => {
+      if (!frame) frame = requestAnimationFrame(fit);
+    };
+    fit();
+    window.addEventListener('scroll', schedule, true);
+    window.addEventListener('resize', schedule);
+    largeScreen.addEventListener('change', schedule);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener('scroll', schedule, true);
+      window.removeEventListener('resize', schedule);
+      largeScreen.removeEventListener('change', schedule);
+    };
+  }, []);
+
   return (
     <div>
       <Button
@@ -68,17 +104,23 @@ export default function QuestionNavigator({
       </Button>
 
       <Card
+        ref={cardRef}
         id="question-navigator-panel"
-        className={`mt-2 lg:mt-0 lg:block ${isOpen ? 'block' : 'hidden'}`}
+        className={`mt-2 lg:mt-0 lg:flex lg:flex-col ${isOpen ? 'block' : 'hidden'}`}
       >
-        <CardHeader className="pb-3">
+        <CardHeader className="shrink-0 pb-3">
           <CardTitle className="text-base">Questions</CardTitle>
           <p className="text-sm text-muted-foreground">
             {answered} / {total} answered · {correct} ✓ · {wrong} ✗
           </p>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div ref={gridRef} className="grid max-h-80 grid-cols-5 gap-2 overflow-y-auto p-1">
+        {/* On large screens the card is capped to the window (see the effect above): header and
+            buttons keep their size and the grid takes the rest, scrolling only when needed. */}
+        <CardContent className="flex min-h-0 flex-col gap-4 lg:flex-auto">
+          <div
+            ref={gridRef}
+            className="grid max-h-[60vh] min-h-0 grid-cols-5 content-start gap-2 overflow-y-auto p-1 lg:max-h-none lg:flex-auto"
+          >
             {questions.map((q, index) => {
               const status = squareStatus(progress, q.id);
               const isCurrent = index === currentIndex;
@@ -100,7 +142,7 @@ export default function QuestionNavigator({
           </div>
 
           {showViewResults && (
-            <Button type="button" className="w-full" onClick={onViewResults}>
+            <Button type="button" className="w-full shrink-0" onClick={onViewResults}>
               View results
             </Button>
           )}
@@ -108,7 +150,7 @@ export default function QuestionNavigator({
           <Button
             type="button"
             variant="outline"
-            className="w-full border-red-500 text-red-600 hover:bg-red-50 hover:text-red-700"
+            className="w-full shrink-0 border-red-500 text-red-600 hover:bg-red-50 hover:text-red-700"
             onClick={onReset}
           >
             Reset progress

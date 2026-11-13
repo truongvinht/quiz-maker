@@ -455,7 +455,7 @@ function App() {
         />
         </div>
         {isSequential && (
-          <aside className="lg:w-64 lg:shrink-0">
+          <aside className="lg:sticky lg:top-4 lg:w-64 lg:shrink-0 lg:self-start">
             <QuestionNavigator
               questions={questions}
               currentIndex={currentQuestionIndex}
