@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useKeyboardShortcut } from '../lib/keyboardShortcuts';
+import { buildQuizResult } from '../lib/quizResult';
 import type { Question, QuizMode } from '../types/quiz';
 import AnswerOption from './AnswerOption';
 import ResultPanel from './ResultPanel';
@@ -44,12 +45,17 @@ export default function QuestionCard({
 
   const [selectedOptions, setSelectedOptions] = useState<string[]>(getInitialSelection);
   const [submitted, setSubmitted] = useState(isLocked);
+  // Ordering/matching answer, kept so sequential mode can show the real result
+  const [mapSelection, setMapSelection] = useState<Map<number, string> | undefined>(
+    lockedSelection instanceof Map ? lockedSelection : undefined,
+  );
 
   const isOrderingQuestion = question.questionType === 'ordering';
   const isMatchingQuestion = question.questionType === 'matching';
 
   // Handle ordering question submission
   const handleOrderingSubmit = (selectedAnswers: Map<number, string>, isCorrect: boolean) => {
+    setMapSelection(selectedAnswers);
     if (onAnswerSubmit) {
       onAnswerSubmit(selectedAnswers, isCorrect);
     }
@@ -65,6 +71,7 @@ export default function QuestionCard({
 
   // Handle matching question submission
   const handleMatchingSubmit = (selectedAnswers: Map<number, string>, isCorrect: boolean) => {
+    setMapSelection(selectedAnswers);
     if (onAnswerSubmit) {
       onAnswerSubmit(selectedAnswers, isCorrect);
     }
@@ -143,6 +150,11 @@ export default function QuestionCard({
     !isMatchingQuestion &&
     selectedOptions.length === (question.correctAnswers?.length || 0) &&
     selectedOptions.every((id) => question.correctAnswers?.includes(id));
+
+  // Training keeps the per-step/per-scenario feedback and shows a neutral "correct" panel;
+  // sequential mode must reflect the real result (same rule as the navigator square).
+  const mapResultCorrect =
+    mode === 'sequential' ? buildQuizResult(question, mapSelection).isCorrect : true;
 
   const getCorrectAnswerTexts = () => {
     if (isOrderingQuestion) {
@@ -234,7 +246,7 @@ export default function QuestionCard({
             {/* Result panel for ordering questions - only show in training mode */}
             {checksImmediately && submitted && (
               <ResultPanel
-                isCorrect={true} // Correctness is shown per-step in OrderingQuestion
+                isCorrect={mapResultCorrect} // Training: correctness is shown per-step in OrderingQuestion
                 explanation={question.explanation}
                 correctAnswers={getCorrectAnswerTexts()}
               />
@@ -268,7 +280,7 @@ export default function QuestionCard({
             {/* Result panel for matching questions - only show in training mode */}
             {checksImmediately && submitted && (
               <ResultPanel
-                isCorrect={true} // Correctness is shown per-scenario in MatchingQuestion
+                isCorrect={mapResultCorrect} // Training: correctness is shown per-scenario in MatchingQuestion
                 explanation={question.explanation}
                 correctAnswers={getCorrectAnswerTexts()}
               />
