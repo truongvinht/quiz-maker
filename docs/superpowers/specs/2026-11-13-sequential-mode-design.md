@@ -1,7 +1,7 @@
 # Sequential Mode — Design
 
 **Date:** 2026-11-13
-**Status:** approved
+**Status:** approved; in progress
 
 ## Intent
 
