@@ -3,6 +3,7 @@ import QuestionCard from './components/QuestionCard';
 import QuizSummary from './components/QuizSummary';
 import TopicSelection from './components/TopicSelection';
 import QuizConfiguration from './components/QuizConfiguration';
+import HomeTitle from './components/HomeTitle';
 import QuestionNavigator from './components/QuestionNavigator';
 import { loadRandomizedQuiz, loadSequentialQuiz } from './services/questionService';
 import { quizTopics } from './data/topics';
@@ -362,9 +363,7 @@ function App() {
     return (
       <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
         <header className="bg-primary py-2 px-6 text-center shadow-xl">
-          <h1 className="text-2xl md:text-3xl font-extrabold m-0 tracking-tight text-primary-foreground">
-            Quiz Maker
-          </h1>
+          <HomeTitle onHome={handleRestart}>Quiz Maker</HomeTitle>
           <p className="mt-0 text-sm m-0 font-medium text-primary-foreground/90">
             {selectedTopic.name}
           </p>
@@ -383,9 +382,7 @@ function App() {
     return (
       <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
         <header className="bg-primary py-2 px-6 text-center shadow-xl">
-          <h1 className="text-2xl md:text-3xl font-extrabold m-0 tracking-tight text-primary-foreground">
-            Quiz Maker
-          </h1>
+          <HomeTitle onHome={handleRestart}>Quiz Maker</HomeTitle>
           <p className="mt-0 text-sm m-0 font-medium text-primary-foreground/90">
             {selectedTopic.name}
           </p>
@@ -414,7 +411,16 @@ function App() {
           </span>
         </p>
         <div className="text-center min-w-0">
-          <h1 className="text-2xl md:text-3xl font-extrabold m-0 tracking-tight text-primary-foreground">Quiz Maker</h1>
+          <HomeTitle
+            onHome={handleRestart}
+            confirmMessage={
+              isSequential
+                ? 'Go back to the topic overview? Your progress in this mode is saved.'
+                : 'Leave this quiz and go back to the topic overview? Your answers and time will be lost.'
+            }
+          >
+            Quiz Maker
+          </HomeTitle>
           <p className="mt-0 text-sm m-0 font-medium text-primary-foreground/90">{selectedTopic.name}</p>
           {!isSequential && (
             <p className="mt-0.5 text-base m-0 font-mono font-bold text-primary-foreground">⏱️ {formattedTime}</p>

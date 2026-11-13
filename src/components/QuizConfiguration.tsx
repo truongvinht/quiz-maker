@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import HomeTitle from '@/components/HomeTitle';
 import type { QuizTopic, QuizConfig, QuizMode } from '../types/quiz';
 
 interface QuizConfigurationProps {
@@ -53,9 +54,7 @@ export default function QuizConfiguration({ topic, onStart, onBack }: QuizConfig
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
       <header className="bg-primary py-2 px-6 text-center shadow-xl">
-        <h1 className="text-2xl md:text-3xl font-extrabold m-0 tracking-tight text-primary-foreground">
-          Quiz Configuration
-        </h1>
+        <HomeTitle onHome={onBack}>Quiz Configuration</HomeTitle>
         <p className="mt-0 text-sm m-0 font-medium text-primary-foreground/90">
           {topic.icon} {topic.name}
         </p>
