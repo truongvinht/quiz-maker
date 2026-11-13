@@ -27,3 +27,6 @@ dist-ssr
 src/data/private/*
 !src/data/private/README.md
 !src/data/private/topics.example.json
+# Agent workspaces (git worktrees, brainstorm mockups, SDD ledgers)
+.claude/worktrees/
+.superpowers/
