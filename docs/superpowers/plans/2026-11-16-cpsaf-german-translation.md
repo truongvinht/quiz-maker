@@ -46,7 +46,7 @@
 
 ### Task 1: Structural check script
 
-- [ ] **Step 0:** Record `shasum src/data/private/cpsaf.json`.
+- [x] **Step 0:** Record `shasum src/data/private/cpsaf.json`.
 
 **Files:**
 - Create: `src/data/private/check_cpsaf_de.py`
@@ -54,8 +54,8 @@
 **Interfaces:**
 - Produces: `python3 -I src/data/private/check_cpsaf_de.py [--partial]` — exits 0 and prints `OK <n> questions` when valid; exits 1 listing each problem. `--partial` allows the German file to hold a prefix of the English questions (used while batches are in progress).
 
-- [ ] **Step 1: Write the script** checking, per question (matched by position and `id`): same keys, `id`, `questionType`, `isMultipleChoice`, `correctAnswers`; same option `id`/`label` sequence; same scenario `id` sequence; matching options mapped exactly per the table; each scenario `correctAnswer` equals the mapping of the English one; no translated text field equal to its English source (allowlist: `Blackbox`, `Whitebox`); without `--partial`, count equals 64.
-- [ ] **Step 2: Run against a missing/empty file** — Expected: exit 1 with a clear message.
+- [x] **Step 1: Write the script** checking, per question (matched by position and `id`): same keys, `id`, `questionType`, `isMultipleChoice`, `correctAnswers`; same option `id`/`label` sequence; same scenario `id` sequence; matching options mapped exactly per the table; each scenario `correctAnswer` equals the mapping of the English one; no translated text field equal to its English source (allowlist: `Blackbox`, `Whitebox`); without `--partial`, count equals 64.
+- [x] **Step 2: Run against a missing/empty file** — Expected: exit 1 with a clear message.
 
 ### Task 2–5: Translate questions in four batches
 
@@ -64,24 +64,24 @@ Batches: Task 2 = ids 1–16, Task 3 = 17–32, Task 4 = 33–48, Task 5 = 49–
 **Files:**
 - Create/Modify: `src/data/private/cpsaf-de.json`
 
-- [ ] **Task 2: Translate ids 1–16**, then run `python3 -I check_cpsaf_de.py --partial` → `OK 16 questions`
-- [ ] **Task 3: Translate ids 17–32**, then run check `--partial` → `OK 32 questions`
-- [ ] **Task 4: Translate ids 33–48**, then run check `--partial` → `OK 48 questions`
-- [ ] **Task 5: Translate ids 49–64**, then run check (no flag) → `OK 64 questions`
+- [x] **Task 2: Translate ids 1–16**, then run `python3 -I check_cpsaf_de.py --partial` → `OK 16 questions`
+- [x] **Task 3: Translate ids 17–32**, then run check `--partial` → `OK 32 questions`
+- [x] **Task 4: Translate ids 33–48**, then run check `--partial` → `OK 48 questions`
+- [x] **Task 5: Translate ids 49–64**, then run check (no flag) → `OK 64 questions`
 
 ### Task 6: Terminology pass and ⚠️ list
 
-- [ ] **Step 1:** Grep `cpsaf-de.json` for each glossary English term's German alternatives (e.g. `Komponente` vs `Baustein`, `Interface`, `Qualitätsattribut`, `Querschnittsthema`) and unify to the glossary form.
-- [ ] **Step 2:** Re-run check (no flag) → `OK 64 questions`.
-- [ ] **Step 3:** Record uncertain terms as a ⚠️ list (question id, English term, chosen German) in the final report to the owner.
+- [x] **Step 1:** Grep `cpsaf-de.json` for each glossary English term's German alternatives (e.g. `Komponente` vs `Baustein`, `Interface`, `Qualitätsattribut`, `Querschnittsthema`) and unify to the glossary form.
+- [x] **Step 2:** Re-run check (no flag) → `OK 64 questions`.
+- [x] **Step 3:** Record uncertain terms as a ⚠️ list (question id, English term, chosen German) in the final report to the owner.
 
 ### Task 7: Register topic
 
 **Files:**
 - Modify: `src/data/private/topics.json`
 
-- [ ] **Step 1:** Set English `cpsaf` `questionCount` to `64`; append `{"id": "cpsaf-de", "name": "CPSA-F (Deutsch)", "description": "iSAQB Certified Professional for Software Architecture – Foundation Level (deutsch): Grundlagen, Qualitätsmerkmale, Dokumentation und Entwurfsprinzipien.", "fileName": "cpsaf-de.json", "questionCount": 64, "icon": "🏛️"}`.
-- [ ] **Step 2:** Verify: `python3 -I -c "import json;t=json.load(open('src/data/private/topics.json'));print([(x['id'],x['questionCount']) for x in t])"` → includes `('cpsaf', 64)` and `('cpsaf-de', 64)`.
-- [ ] **Step 3:** `npm run build` succeeds, and `shasum src/data/private/cpsaf.json` equals the checksum taken before Task 2 (English file untouched).
+- [x] **Step 1:** Set English `cpsaf` `questionCount` to `64`; append `{"id": "cpsaf-de", "name": "CPSA-F (Deutsch)", "description": "iSAQB Certified Professional for Software Architecture – Foundation Level (deutsch): Grundlagen, Qualitätsmerkmale, Dokumentation und Entwurfsprinzipien.", "fileName": "cpsaf-de.json", "questionCount": 64, "icon": "🏛️"}`.
+- [x] **Step 2:** Verify: `python3 -I -c "import json;t=json.load(open('src/data/private/topics.json'));print([(x['id'],x['questionCount']) for x in t])"` → includes `('cpsaf', 64)` and `('cpsaf-de', 64)`.
+- [x] **Step 3:** `npm run build` succeeds, and `shasum src/data/private/cpsaf.json` equals the checksum taken before Task 2 (English file untouched).
 
 No commits for data (gitignored). Only this plan is committed.
