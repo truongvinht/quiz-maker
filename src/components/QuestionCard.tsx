@@ -207,7 +207,7 @@ export default function QuestionCard({
         )}
         {isMatchingQuestion && (
           <div>
-            <Badge className="bg-orange-500 text-white hover:bg-orange-600">
+            <Badge className="bg-orange-500 text-white hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-500">
               <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM4.332 8.027a6.012 6.012 0 011.912-2.706C6.512 5.73 6.974 6 7.5 6A1.5 1.5 0 019 7.5V8a2 2 0 004 0v-.5A1.5 1.5 0 0114.5 6c.526 0 .988-.27 1.256-.679a6.012 6.012 0 011.912 2.706A6.015 6.015 0 0119 10a6.015 6.015 0 01-1.44 1.973 6.012 6.012 0 01-1.912 2.706A1.5 1.5 0 0114.5 14 1.5 1.5 0 0113 12.5V12a2 2 0 00-4 0v.5a1.5 1.5 0 01-1.5 1.5c-.526 0-.988.27-1.256.679a6.012 6.012 0 01-1.912-2.706A6.015 6.015 0 011 10c0-.66.09-1.299.332-1.973z" clipRule="evenodd" />

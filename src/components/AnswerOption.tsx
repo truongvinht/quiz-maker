@@ -21,7 +21,7 @@ export default function AnswerOption({
     let className = 'flex items-start p-5 my-3 border-2 rounded-xl transition-all duration-300 ease-in-out';
 
     // Base state with shadow
-    className += ' border-gray-200 bg-white shadow-sm';
+    className += ' border-border bg-card shadow-sm';
 
     // Selected state (before submission)
     if (isSelected && !disabled) {
@@ -32,10 +32,10 @@ export default function AnswerOption({
     if (disabled && isCorrect !== null) {
       if (isCorrect) {
         // This is a correct answer - always show green
-        className += ' border-green-500 bg-green-50 shadow-md ring-2 ring-green-500 ring-opacity-30';
+        className += ' border-correct bg-correct-light shadow-md ring-2 ring-correct/30';
       } else if (isSelected) {
         // This was selected but is incorrect - show red
-        className += ' border-red-500 bg-red-50 shadow-md ring-2 ring-red-500 ring-opacity-30';
+        className += ' border-incorrect bg-incorrect-light shadow-md ring-2 ring-incorrect/30';
       }
     }
 
@@ -75,7 +75,7 @@ export default function AnswerOption({
         aria-hidden="true"
       />
       <label className="flex items-start cursor-pointer w-full pointer-events-none">
-        <span className="text-gray-900 leading-relaxed flex-1 text-base">{option.text}</span>
+        <span className="text-foreground leading-relaxed flex-1 text-base">{option.text}</span>
       </label>
     </div>
   );

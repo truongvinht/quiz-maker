@@ -15,8 +15,8 @@ export default function ResultPanel({ isCorrect, explanation, correctAnswers }: 
     <Card
       className={`mt-8 border-l-8 shadow-lg animate-in slide-in-from-bottom-4 fade-in duration-700 ${
         isCorrect
-          ? 'bg-linear-to-br from-correct-light to-green-50 border-correct'
-          : 'bg-linear-to-br from-incorrect-light to-red-50 border-incorrect'
+          ? 'bg-linear-to-br from-correct-light to-correct-light/50 border-correct'
+          : 'bg-linear-to-br from-incorrect-light to-incorrect-light/50 border-incorrect'
       }`}
       role="alert"
       aria-live="polite"
@@ -30,12 +30,12 @@ export default function ResultPanel({ isCorrect, explanation, correctAnswers }: 
         >
           <div className="flex items-center justify-between gap-4">
             <p className="m-0 text-base font-semibold flex items-center gap-2">
-              <span className={`text-2xl ${isCorrect ? 'text-green-600' : 'text-red-600'}`}>
+              <span className={`text-2xl ${isCorrect ? 'text-correct-foreground' : 'text-incorrect-foreground'}`}>
                 {isCorrect ? '✓' : '✗'}
               </span>
               <span>
                 Correct answer{correctAnswers.length > 1 ? 's' : ''}:{' '}
-                <span className={`${isCorrect ? 'text-correct' : 'text-incorrect'} font-bold`}>
+                <span className={`${isCorrect ? 'text-correct-foreground' : 'text-incorrect-foreground'} font-bold`}>
                   {correctAnswers.join(', ')}
                 </span>
               </span>

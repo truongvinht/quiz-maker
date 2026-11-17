@@ -1,5 +1,100 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: #ffffff;
+  --foreground: #0a0a0a;
+  --card: #ffffff;
+  --card-foreground: #0a0a0a;
+  --primary: #1976d2;
+  --primary-foreground: #fafafa;
+  --header: #1976d2;
+  --header-foreground: #fafafa;
+  --primary-dark: #115293;
+  --secondary: #f5f5f5;
+  --secondary-foreground: #171717;
+  --muted: #f5f5f5;
+  --muted-foreground: #737373;
+  --accent: #f5f5f5;
+  --accent-foreground: #171717;
+  --destructive: #e7000b;
+  --destructive-foreground: #fafafa;
+  --border: #e5e5e5;
+  --input: #e5e5e5;
+  --ring: #a1a1a1;
+  --correct: #4caf50;
+  --correct-light: #e8f5e9;
+  --correct-foreground: #1b5e20;
+  --incorrect: #f44336;
+  --incorrect-light: #ffebee;
+  --incorrect-foreground: #b71c1c;
+  --selected: #2196f3;
+  --selected-light: #e3f2fd;
+}
+
+.dark {
+  --background: #0f172a;
+  --foreground: #f1f5f9;
+  --card: #1e293b;
+  --card-foreground: #f1f5f9;
+  --primary: #60a5fa;
+  --header: #0d3b75;
+  --header-foreground: #f8fafc;
+  --primary-foreground: #0f172a;
+  --primary-dark: #0a2d5a;
+  --secondary: #334155;
+  --secondary-foreground: #f1f5f9;
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+  --accent: #334155;
+  --accent-foreground: #f1f5f9;
+  --destructive: #f87171;
+  --destructive-foreground: #0f172a;
+  --border: #334155;
+  --input: #334155;
+  --ring: #64748b;
+  --correct: #4ade80;
+  --correct-light: #14361f;
+  --correct-foreground: #86efac;
+  --incorrect: #f87171;
+  --incorrect-light: #3f1d1d;
+  --incorrect-foreground: #fca5a5;
+  --selected: #60a5fa;
+  --selected-light: #1e3a5f;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-header: var(--header);
+  --color-header-foreground: var(--header-foreground);
+  --color-primary-dark: var(--primary-dark);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-correct: var(--correct);
+  --color-correct-light: var(--correct-light);
+  --color-correct-foreground: var(--correct-foreground);
+  --color-incorrect: var(--incorrect);
+  --color-incorrect-light: var(--incorrect-light);
+  --color-incorrect-foreground: var(--incorrect-foreground);
+  --color-selected: var(--selected);
+  --color-selected-light: var(--selected-light);
+}
+
 @layer base {
   html,
   body {
@@ -7,6 +102,11 @@
     margin: 0;
     padding: 0;
     overflow-x: hidden;
+  }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
   }
 
   #root {

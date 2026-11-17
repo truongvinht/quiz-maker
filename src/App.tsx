@@ -26,7 +26,7 @@ import type { QuizResult, QuizSummary as QuizSummaryType, Question, QuizTopic, Q
 
 // Previous/Next in the dark question-screen header: light outline instead of the default white fill.
 const HEADER_NAV_BUTTON_CLASSES =
-  'bg-transparent border-primary-foreground/40 text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground px-3 sm:px-4';
+  'bg-transparent border-header-foreground/40 text-header-foreground hover:bg-header-foreground/10 hover:text-header-foreground px-3 sm:px-4';
 
 function App() {
   const [selectedTopic, setSelectedTopic] = useState<QuizTopic | null>(null);
@@ -336,11 +336,11 @@ function App() {
   // Show topic selection if no topic is selected
   if (!selectedTopic) {
     return (
-      <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="min-h-screen flex flex-col bg-gradient-to-br from-background to-muted">
         <main className="flex-1 py-6 px-4">
           <TopicSelection topics={quizTopics} onTopicSelect={handleTopicSelect} />
         </main>
-        <footer className="bg-white py-3 px-4 text-center text-gray-600 text-xs border-t-2 border-gray-200 shadow-inner">
+        <footer className="bg-card py-3 px-4 text-center text-muted-foreground text-xs border-t-2 border-border shadow-inner">
           <p className="m-0 font-medium">Built with React + TypeScript + Vite + Tailwind CSS</p>
         </footer>
       </div>
@@ -361,10 +361,10 @@ function App() {
   // Show loading state while questions are being loaded
   if (isLoading || questions.length === 0) {
     return (
-      <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
-        <header className="bg-primary py-2 px-6 text-center shadow-xl">
+      <div className="min-h-screen flex flex-col bg-gradient-to-br from-background to-muted">
+        <header className="bg-header py-2 px-16 text-center shadow-xl">
           <HomeTitle onHome={handleRestart}>Quiz Maker</HomeTitle>
-          <p className="mt-0 text-sm m-0 font-medium text-primary-foreground/90">
+          <p className="mt-0 text-sm m-0 font-medium text-header-foreground/90">
             {selectedTopic.name}
           </p>
         </header>
@@ -380,10 +380,10 @@ function App() {
 
   if (quizCompleted) {
     return (
-      <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
-        <header className="bg-primary py-2 px-6 text-center shadow-xl">
+      <div className="min-h-screen flex flex-col bg-gradient-to-br from-background to-muted">
+        <header className="bg-header py-2 px-16 text-center shadow-xl">
           <HomeTitle onHome={handleRestart}>Quiz Maker</HomeTitle>
-          <p className="mt-0 text-sm m-0 font-medium text-primary-foreground/90">
+          <p className="mt-0 text-sm m-0 font-medium text-header-foreground/90">
             {selectedTopic.name}
           </p>
         </header>
@@ -392,7 +392,7 @@ function App() {
           <QuizSummary summary={generateSummary()} onRestart={handleRestart} elapsedTime={isSequential ? '—' : formattedTime} />
         </main>
 
-        <footer className="bg-white py-3 px-4 text-center text-gray-600 text-xs border-t-2 border-gray-200 shadow-inner">
+        <footer className="bg-card py-3 px-4 text-center text-muted-foreground text-xs border-t-2 border-border shadow-inner">
           <p className="m-0 font-medium">Built with React + TypeScript + Vite + Tailwind CSS</p>
         </footer>
       </div>
@@ -400,11 +400,11 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-background to-muted">
       {/* Question screen: "Question x of y" on the left, title in the middle, Previous/Next on
           the right. On phones the buttons show only their arrows so all three fit in one row. */}
-      <header className="bg-primary py-2 px-3 sm:px-6 shadow-xl grid grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-4">
-        <p className="m-0 justify-self-start text-sm sm:text-lg font-bold text-primary-foreground">
+      <header className="bg-header py-2 pl-16 pr-3 sm:pr-6 shadow-xl grid grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-4">
+        <p className="m-0 justify-self-start text-sm sm:text-lg font-bold text-header-foreground">
           Question{' '}
           <span className="whitespace-nowrap">
             {currentQuestionIndex + 1} of {totalQuestions}
@@ -421,9 +421,9 @@ function App() {
           >
             Quiz Maker
           </HomeTitle>
-          <p className="mt-0 text-sm m-0 font-medium text-primary-foreground/90">{selectedTopic.name}</p>
+          <p className="mt-0 text-sm m-0 font-medium text-header-foreground/90">{selectedTopic.name}</p>
           {!isSequential && (
-            <p className="mt-0.5 text-base m-0 font-mono font-bold text-primary-foreground">⏱️ {formattedTime}</p>
+            <p className="mt-0.5 text-base m-0 font-mono font-bold text-header-foreground">⏱️ {formattedTime}</p>
           )}
         </div>
         <div className="flex justify-self-end gap-2 sm:gap-3">
@@ -470,7 +470,7 @@ function App() {
         />
         </div>
         {isSequential && (
-          <aside className="lg:sticky lg:top-4 lg:w-64 lg:shrink-0 lg:self-start">
+          <aside className="lg:sticky lg:top-16 lg:w-64 lg:shrink-0 lg:self-start">
             <QuestionNavigator
               questions={questions}
               currentIndex={currentQuestionIndex}

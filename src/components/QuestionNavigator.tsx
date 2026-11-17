@@ -18,13 +18,13 @@ interface QuestionNavigatorProps {
   onViewResults: () => void; // button only rendered when every question is answered
 }
 
-const WINDOW_MARGIN_PX = 16; // gap kept below the card, matches the sticky top-4 offset
+const BOTTOM_MARGIN_PX = 16; // gap kept below the card (the sticky top offset is lg:top-16 in App.tsx)
 const MIN_CARD_HEIGHT_PX = 240; // keep header, a few rows and the buttons usable in tiny windows
 
 const STATUS_CLASSES: Record<SquareStatus, string> = {
-  unanswered: 'bg-white text-foreground border-border hover:bg-muted',
-  correct: 'bg-green-500 text-white border-green-600',
-  wrong: 'bg-red-500 text-white border-red-600',
+  unanswered: 'bg-card text-foreground border-border hover:bg-muted',
+  correct: 'bg-correct text-white dark:text-background border-correct',
+  wrong: 'bg-incorrect text-white dark:text-background border-incorrect',
 };
 
 export default function QuestionNavigator({
@@ -72,7 +72,7 @@ export default function QuestionNavigator({
         card.style.maxHeight = '';
         return;
       }
-      const room = window.innerHeight - card.getBoundingClientRect().top - WINDOW_MARGIN_PX;
+      const room = window.innerHeight - card.getBoundingClientRect().top - BOTTOM_MARGIN_PX;
       card.style.maxHeight = `${Math.max(room, MIN_CARD_HEIGHT_PX)}px`;
     };
     const schedule = () => {
@@ -133,7 +133,7 @@ export default function QuestionNavigator({
                   onClick={() => onJump(index)}
                   className={`flex aspect-square items-center justify-center rounded-md border text-sm font-medium transition-colors ${
                     STATUS_CLASSES[status]
-                  } ${isCurrent ? 'ring-2 ring-blue-600 ring-offset-1' : ''}`}
+                  } ${isCurrent ? 'ring-2 ring-selected ring-offset-1 ring-offset-background' : ''}`}
                 >
                   {index + 1}
                 </button>
@@ -150,7 +150,7 @@ export default function QuestionNavigator({
           <Button
             type="button"
             variant="outline"
-            className="w-full shrink-0 border-red-500 text-red-600 hover:bg-red-50 hover:text-red-700"
+            className="w-full shrink-0 border-incorrect text-incorrect-foreground hover:bg-incorrect-light hover:text-incorrect-foreground"
             onClick={onReset}
           >
             Reset progress

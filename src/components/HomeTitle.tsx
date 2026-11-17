@@ -10,7 +10,7 @@ const DEFAULT_CONFIRM_MESSAGE = 'Go back to the topic overview?';
 // choice), so a stray click never throws away a running quiz.
 export default function HomeTitle({ children, onHome, confirmMessage = DEFAULT_CONFIRM_MESSAGE }: HomeTitleProps) {
   return (
-    <h1 className="text-2xl md:text-3xl font-extrabold m-0 tracking-tight text-primary-foreground">
+    <h1 className="text-2xl md:text-3xl font-extrabold m-0 tracking-tight text-header-foreground">
       <button
         type="button"
         title="Back to the topic overview"

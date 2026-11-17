@@ -30,15 +30,15 @@ export default function QuizSummary({ summary, onRestart, elapsedTime }: QuizSum
   };
 
   const getScoreColor = () => {
-    if (score >= 80) return 'text-green-600';
-    if (score >= 60) return 'text-yellow-600';
-    return 'text-red-600';
+    if (score >= 80) return 'text-correct-foreground';
+    if (score >= 60) return 'text-yellow-600 dark:text-yellow-400';
+    return 'text-incorrect-foreground';
   };
 
   const getScoreBgColor = () => {
-    if (score >= 80) return 'bg-green-50 border-green-200';
-    if (score >= 60) return 'bg-yellow-50 border-yellow-200';
-    return 'bg-red-50 border-red-200';
+    if (score >= 80) return 'bg-correct-light border-correct';
+    if (score >= 60) return 'bg-yellow-50 border-yellow-200 dark:bg-yellow-950 dark:border-yellow-800';
+    return 'bg-incorrect-light border-incorrect';
   };
 
   const getPerformanceMessage = () => {
@@ -67,11 +67,11 @@ export default function QuizSummary({ summary, onRestart, elapsedTime }: QuizSum
             </div>
             <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 text-lg">
               <div className="flex items-center gap-2 justify-center">
-                <span className="text-green-600 font-bold text-2xl">✓</span>
+                <span className="text-correct-foreground font-bold text-2xl">✓</span>
                 <span className="font-semibold">{correctAnswers} Correct</span>
               </div>
               <div className="flex items-center gap-2 justify-center">
-                <span className="text-red-600 font-bold text-2xl">✗</span>
+                <span className="text-incorrect-foreground font-bold text-2xl">✗</span>
                 <span className="font-semibold">{incorrectAnswers} Incorrect</span>
               </div>
               <div className="flex items-center gap-2 justify-center">
@@ -103,8 +103,8 @@ export default function QuizSummary({ summary, onRestart, elapsedTime }: QuizSum
               key={result.questionId}
               className={`border-l-4 ${
                 result.isCorrect
-                  ? 'border-l-green-500 bg-green-50/50'
-                  : 'border-l-red-500 bg-red-50/50'
+                  ? 'border-l-correct bg-correct-light/50'
+                  : 'border-l-incorrect bg-incorrect-light/50'
               }`}
             >
               <CardHeader>
@@ -144,10 +144,10 @@ export default function QuizSummary({ summary, onRestart, elapsedTime }: QuizSum
                     </Button>
                     <div
                       className={`shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
-                        result.isCorrect ? 'bg-green-600' : 'bg-red-600'
+                        result.isCorrect ? 'bg-correct' : 'bg-incorrect'
                       }`}
                     >
-                      <span className="text-2xl font-bold text-white">
+                      <span className="text-2xl font-bold text-white dark:text-background">
                         {result.isCorrect ? '✓' : '✗'}
                       </span>
                     </div>
@@ -166,14 +166,14 @@ export default function QuizSummary({ summary, onRestart, elapsedTime }: QuizSum
                           {result.userAnswerTexts.map((answerText, idx) => (
                             <p
                               key={idx}
-                              className="text-sm pl-4 border-l-4 py-1 border-l-green-500 bg-green-50 text-green-900"
+                              className="text-sm pl-4 border-l-4 py-1 border-l-correct bg-correct-light text-foreground"
                             >
                               {answerText}
                             </p>
                           ))}
                         </div>
                       ) : (
-                        <p className="text-sm text-gray-500 italic">No answer provided</p>
+                        <p className="text-sm text-muted-foreground italic">No answer provided</p>
                       )}
                     </div>
                   ) : (
@@ -188,18 +188,18 @@ export default function QuizSummary({ summary, onRestart, elapsedTime }: QuizSum
 
                           let className = 'text-sm pl-4 border-l-4 py-2 rounded';
                           if (isCorrectAnswer) {
-                            className += ' border-l-green-500 bg-green-50 text-green-900 font-semibold';
+                            className += ' border-l-correct bg-correct-light text-foreground font-semibold';
                           } else if (isUserAnswer) {
-                            className += ' border-l-red-500 bg-red-50 text-red-900';
+                            className += ' border-l-incorrect bg-incorrect-light text-foreground';
                           } else {
-                            className += ' border-l-gray-300 bg-gray-50 text-gray-700';
+                            className += ' border-l-border bg-muted text-foreground';
                           }
 
                           return (
                             <div key={option.id} className={className}>
                               {option.text}
-                              {isCorrectAnswer && <span className="ml-2 text-green-700">✓ Correct</span>}
-                              {isUserAnswer && !isCorrectAnswer && <span className="ml-2 text-red-700">✗ Your answer</span>}
+                              {isCorrectAnswer && <span className="ml-2 text-correct-foreground">✓ Correct</span>}
+                              {isUserAnswer && !isCorrectAnswer && <span className="ml-2 text-incorrect-foreground">✗ Your answer</span>}
                             </div>
                           );
                         })}
