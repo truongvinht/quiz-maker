@@ -173,7 +173,7 @@ export default function QuizConfiguration({ topic, onStart, onBack }: QuizConfig
                   max={topic.questionCount}
                   value={startQuestion}
                   onChange={(e) => handleStartQuestionChange(e.target.value)}
-                  className="w-full px-4 py-3 text-lg border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                  className="w-full px-4 py-3 text-lg border border-border bg-card text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                 />
                 <p className="text-xs text-muted-foreground">
                   Enter a number between 1 and {topic.questionCount}
@@ -192,7 +192,7 @@ export default function QuizConfiguration({ topic, onStart, onBack }: QuizConfig
                   max={maxQuestions}
                   value={questionCount}
                   onChange={(e) => handleQuestionCountChange(e.target.value)}
-                  className="w-full px-4 py-3 text-lg border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                  className="w-full px-4 py-3 text-lg border border-border bg-card text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                 />
                 <p className="text-xs text-muted-foreground">
                   Maximum {maxQuestions} questions available from question #{startQuestion}

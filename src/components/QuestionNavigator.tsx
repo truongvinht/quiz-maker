@@ -23,8 +23,8 @@ const MIN_CARD_HEIGHT_PX = 240; // keep header, a few rows and the buttons usabl
 
 const STATUS_CLASSES: Record<SquareStatus, string> = {
   unanswered: 'bg-card text-foreground border-border hover:bg-muted',
-  correct: 'bg-green-500 text-white border-correct',
-  wrong: 'bg-incorrect text-white border-incorrect',
+  correct: 'bg-correct text-white dark:text-background border-correct',
+  wrong: 'bg-incorrect text-white dark:text-background border-incorrect',
 };
 
 export default function QuestionNavigator({
@@ -150,7 +150,7 @@ export default function QuestionNavigator({
           <Button
             type="button"
             variant="outline"
-            className="w-full shrink-0 border-incorrect text-incorrect hover:bg-incorrect-light hover:text-incorrect"
+            className="w-full shrink-0 border-incorrect text-incorrect-foreground hover:bg-incorrect-light hover:text-incorrect-foreground"
             onClick={onReset}
           >
             Reset progress

@@ -30,12 +30,12 @@ export default function ResultPanel({ isCorrect, explanation, correctAnswers }: 
         >
           <div className="flex items-center justify-between gap-4">
             <p className="m-0 text-base font-semibold flex items-center gap-2">
-              <span className={`text-2xl ${isCorrect ? 'text-correct' : 'text-incorrect'}`}>
+              <span className={`text-2xl ${isCorrect ? 'text-correct-foreground' : 'text-incorrect-foreground'}`}>
                 {isCorrect ? '✓' : '✗'}
               </span>
               <span>
                 Correct answer{correctAnswers.length > 1 ? 's' : ''}:{' '}
-                <span className={`${isCorrect ? 'text-correct' : 'text-incorrect'} font-bold`}>
+                <span className={`${isCorrect ? 'text-correct-foreground' : 'text-incorrect-foreground'} font-bold`}>
                   {correctAnswers.join(', ')}
                 </span>
               </span>

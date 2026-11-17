@@ -30,9 +30,9 @@ export default function QuizSummary({ summary, onRestart, elapsedTime }: QuizSum
   };
 
   const getScoreColor = () => {
-    if (score >= 80) return 'text-correct';
+    if (score >= 80) return 'text-correct-foreground';
     if (score >= 60) return 'text-yellow-600 dark:text-yellow-400';
-    return 'text-incorrect';
+    return 'text-incorrect-foreground';
   };
 
   const getScoreBgColor = () => {
@@ -67,11 +67,11 @@ export default function QuizSummary({ summary, onRestart, elapsedTime }: QuizSum
             </div>
             <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 text-lg">
               <div className="flex items-center gap-2 justify-center">
-                <span className="text-correct font-bold text-2xl">✓</span>
+                <span className="text-correct-foreground font-bold text-2xl">✓</span>
                 <span className="font-semibold">{correctAnswers} Correct</span>
               </div>
               <div className="flex items-center gap-2 justify-center">
-                <span className="text-incorrect font-bold text-2xl">✗</span>
+                <span className="text-incorrect-foreground font-bold text-2xl">✗</span>
                 <span className="font-semibold">{incorrectAnswers} Incorrect</span>
               </div>
               <div className="flex items-center gap-2 justify-center">
@@ -147,7 +147,7 @@ export default function QuizSummary({ summary, onRestart, elapsedTime }: QuizSum
                         result.isCorrect ? 'bg-correct' : 'bg-incorrect'
                       }`}
                     >
-                      <span className="text-2xl font-bold text-white">
+                      <span className="text-2xl font-bold text-white dark:text-background">
                         {result.isCorrect ? '✓' : '✗'}
                       </span>
                     </div>
@@ -166,7 +166,7 @@ export default function QuizSummary({ summary, onRestart, elapsedTime }: QuizSum
                           {result.userAnswerTexts.map((answerText, idx) => (
                             <p
                               key={idx}
-                              className="text-sm pl-4 border-l-4 py-1 border-l-correct bg-correct-light text-correct"
+                              className="text-sm pl-4 border-l-4 py-1 border-l-correct bg-correct-light text-foreground"
                             >
                               {answerText}
                             </p>
@@ -188,9 +188,9 @@ export default function QuizSummary({ summary, onRestart, elapsedTime }: QuizSum
 
                           let className = 'text-sm pl-4 border-l-4 py-2 rounded';
                           if (isCorrectAnswer) {
-                            className += ' border-l-correct bg-correct-light text-correct font-semibold';
+                            className += ' border-l-correct bg-correct-light text-foreground font-semibold';
                           } else if (isUserAnswer) {
-                            className += ' border-l-incorrect bg-incorrect-light text-incorrect';
+                            className += ' border-l-incorrect bg-incorrect-light text-foreground';
                           } else {
                             className += ' border-l-border bg-muted text-foreground';
                           }
@@ -198,8 +198,8 @@ export default function QuizSummary({ summary, onRestart, elapsedTime }: QuizSum
                           return (
                             <div key={option.id} className={className}>
                               {option.text}
-                              {isCorrectAnswer && <span className="ml-2 text-correct">✓ Correct</span>}
-                              {isUserAnswer && !isCorrectAnswer && <span className="ml-2 text-incorrect">✗ Your answer</span>}
+                              {isCorrectAnswer && <span className="ml-2 text-correct-foreground">✓ Correct</span>}
+                              {isUserAnswer && !isCorrectAnswer && <span className="ml-2 text-incorrect-foreground">✗ Your answer</span>}
                             </div>
                           );
                         })}

@@ -103,7 +103,7 @@ export default function MatchingQuestion({
                       value={selected}
                       onChange={(e) => handleScenarioChange(scenario.id, e.target.value)}
                       disabled={submitted || disabled}
-                      className={`flex-1 p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary transition-all ${
+                      className={`flex-1 p-2 border rounded-md bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all ${
                         submitted
                           ? correctness === true
                             ? 'border-correct bg-correct-light'
@@ -124,11 +124,11 @@ export default function MatchingQuestion({
                     {submitted && (
                       <div className="min-w-[24px]">
                         {correctness === true ? (
-                          <svg className="w-6 h-6 text-correct" fill="currentColor" viewBox="0 0 20 20">
+                          <svg className="w-6 h-6 text-correct-foreground" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                           </svg>
                         ) : (
-                          <svg className="w-6 h-6 text-incorrect" fill="currentColor" viewBox="0 0 20 20">
+                          <svg className="w-6 h-6 text-incorrect-foreground" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                           </svg>
                         )}
@@ -138,7 +138,7 @@ export default function MatchingQuestion({
 
                   {/* Show correct answer if wrong */}
                   {submitted && correctness === false && (
-                    <div className="text-sm text-correct font-medium">
+                    <div className="text-sm text-correct-foreground font-medium">
                       Correct answer: {scenario.correctAnswer}
                     </div>
                   )}
