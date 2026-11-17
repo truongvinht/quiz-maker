@@ -58,17 +58,18 @@ QuizConfiguration,QuizSummary,ResultPanel}.tsx`.
   reads/writes wrapped in try/catch, invalid/missing → `system`). Resolved theme sets/removes the
   `dark` class on `<html>` and `color-scheme`.
 - **No flash**: a small inline script in `index.html` applies the class before React renders.
-- **Switch**: a round button fixed bottom-right on every screen (rendered once at app root), cycling
-  🖥️ System → ☀️ Light → 🌙 Dark, with `aria-label`/`title` naming the current choice. Placement is
-  Claude's proposal from the mockup; owner did not object.
+- **Switch**: a round button fixed **top-left** on every screen (rendered once at app root), cycling
+  🖥️ System → ☀️ Light → 🌙 Dark, with `aria-label`/`title` naming the current choice. It stays
+  visible while scrolling. Owner moved it from bottom-right to top-left (2026-11-17, option A: pinned
+  to the window rather than built into the header); headers and the sticky question navigator make
+  room so the button covers nothing at rest.
 - **Tests** (vitest, existing): preference parsing/persistence and system resolution as pure functions.
 
 ## Left to the builder
 
 - Exact dark shades beyond those named above, as long as text contrast is comfortable and answer
   states stay distinct.
-- Making sure the corner button doesn't cover controls (e.g. bottom buttons on phones; add bottom
-  padding if needed).
+- Making sure the corner button doesn't cover header text or the sticky navigator (padding/offsets).
 - Whether `tailwind.config.js` is left as is (it is unused); not in scope to remove.
 
 ## Constraints
