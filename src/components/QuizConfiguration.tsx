@@ -52,7 +52,7 @@ export default function QuizConfiguration({ topic, onStart, onBack }: QuizConfig
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-background to-muted">
       <header className="bg-primary py-2 px-6 text-center shadow-xl">
         <HomeTitle onHome={onBack}>Quiz Configuration</HomeTitle>
         <p className="mt-0 text-sm m-0 font-medium text-primary-foreground/90">
@@ -60,7 +60,7 @@ export default function QuizConfiguration({ topic, onStart, onBack }: QuizConfig
         </p>
       </header>
 
-      <main className="flex-1 py-6 px-4 flex items-center justify-center">
+      <main className="flex-1 pt-6 pb-20 px-4 flex items-center justify-center">
         <Card className="w-full max-w-2xl shadow-2xl">
           <CardHeader className="text-center pb-4">
             <CardTitle className="text-2xl md:text-3xl font-bold text-foreground">
@@ -93,14 +93,14 @@ export default function QuizConfiguration({ topic, onStart, onBack }: QuizConfig
                   className={`relative flex flex-col items-start p-4 border-2 rounded-lg transition-all ${
                     mode === 'training'
                       ? 'border-primary bg-primary/10 shadow-md'
-                      : 'border-gray-300 hover:border-gray-400 bg-white'
+                      : 'border-border hover:border-muted-foreground bg-card'
                   }`}
                 >
                   <div className="flex items-center gap-2 mb-2">
                     <div className={`w-6 h-6 rounded-full transition-all ${
                       mode === 'training'
                         ? 'bg-primary border-2 border-primary'
-                        : 'border-2 border-gray-400 bg-white'
+                        : 'border-2 border-border bg-card'
                     }`}></div>
                     <span className="font-bold text-base">Training Mode</span>
                   </div>
@@ -116,14 +116,14 @@ export default function QuizConfiguration({ topic, onStart, onBack }: QuizConfig
                   className={`relative flex flex-col items-start p-4 border-2 rounded-lg transition-all ${
                     mode === 'exam'
                       ? 'border-primary bg-primary/10 shadow-md'
-                      : 'border-gray-300 hover:border-gray-400 bg-white'
+                      : 'border-border hover:border-muted-foreground bg-card'
                   }`}
                 >
                   <div className="flex items-center gap-2 mb-2">
                     <div className={`w-6 h-6 rounded-full transition-all ${
                       mode === 'exam'
                         ? 'bg-primary border-2 border-primary'
-                        : 'border-2 border-gray-400 bg-white'
+                        : 'border-2 border-border bg-card'
                     }`}></div>
                     <span className="font-bold text-base">Exam Mode</span>
                   </div>
@@ -139,14 +139,14 @@ export default function QuizConfiguration({ topic, onStart, onBack }: QuizConfig
                   className={`relative flex flex-col items-start p-4 border-2 rounded-lg transition-all ${
                     mode === 'sequential'
                       ? 'border-primary bg-primary/10 shadow-md'
-                      : 'border-gray-300 hover:border-gray-400 bg-white'
+                      : 'border-border hover:border-muted-foreground bg-card'
                   }`}
                 >
                   <div className="flex items-center gap-2 mb-2">
                     <div className={`w-6 h-6 rounded-full transition-all ${
                       mode === 'sequential'
                         ? 'bg-primary border-2 border-primary'
-                        : 'border-2 border-gray-400 bg-white'
+                        : 'border-2 border-border bg-card'
                     }`}></div>
                     <span className="font-bold text-base">Sequential Mode</span>
                   </div>
@@ -173,7 +173,7 @@ export default function QuizConfiguration({ topic, onStart, onBack }: QuizConfig
                   max={topic.questionCount}
                   value={startQuestion}
                   onChange={(e) => handleStartQuestionChange(e.target.value)}
-                  className="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                  className="w-full px-4 py-3 text-lg border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                 />
                 <p className="text-xs text-muted-foreground">
                   Enter a number between 1 and {topic.questionCount}
@@ -192,7 +192,7 @@ export default function QuizConfiguration({ topic, onStart, onBack }: QuizConfig
                   max={maxQuestions}
                   value={questionCount}
                   onChange={(e) => handleQuestionCountChange(e.target.value)}
-                  className="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                  className="w-full px-4 py-3 text-lg border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                 />
                 <p className="text-xs text-muted-foreground">
                   Maximum {maxQuestions} questions available from question #{startQuestion}
@@ -239,7 +239,7 @@ export default function QuizConfiguration({ topic, onStart, onBack }: QuizConfig
         </Card>
       </main>
 
-      <footer className="bg-white py-3 px-4 text-center text-gray-600 text-xs border-t-2 border-gray-200 shadow-inner">
+      <footer className="bg-card py-3 px-4 text-center text-muted-foreground text-xs border-t-2 border-border shadow-inner">
         <p className="m-0 font-medium">Built with React + TypeScript + Vite + Tailwind CSS</p>
       </footer>
     </div>

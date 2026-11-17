@@ -336,11 +336,11 @@ function App() {
   // Show topic selection if no topic is selected
   if (!selectedTopic) {
     return (
-      <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
-        <main className="flex-1 py-6 px-4">
+      <div className="min-h-screen flex flex-col bg-gradient-to-br from-background to-muted">
+        <main className="flex-1 pt-6 pb-20 px-4">
           <TopicSelection topics={quizTopics} onTopicSelect={handleTopicSelect} />
         </main>
-        <footer className="bg-white py-3 px-4 text-center text-gray-600 text-xs border-t-2 border-gray-200 shadow-inner">
+        <footer className="bg-card py-3 px-4 text-center text-muted-foreground text-xs border-t-2 border-border shadow-inner">
           <p className="m-0 font-medium">Built with React + TypeScript + Vite + Tailwind CSS</p>
         </footer>
       </div>
@@ -361,14 +361,14 @@ function App() {
   // Show loading state while questions are being loaded
   if (isLoading || questions.length === 0) {
     return (
-      <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="min-h-screen flex flex-col bg-gradient-to-br from-background to-muted">
         <header className="bg-primary py-2 px-6 text-center shadow-xl">
           <HomeTitle onHome={handleRestart}>Quiz Maker</HomeTitle>
           <p className="mt-0 text-sm m-0 font-medium text-primary-foreground/90">
             {selectedTopic.name}
           </p>
         </header>
-        <main className="flex-1 py-6 px-4 flex items-center justify-center">
+        <main className="flex-1 pt-6 pb-20 px-4 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
             <p className="text-lg text-muted-foreground">Loading questions...</p>
@@ -380,7 +380,7 @@ function App() {
 
   if (quizCompleted) {
     return (
-      <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="min-h-screen flex flex-col bg-gradient-to-br from-background to-muted">
         <header className="bg-primary py-2 px-6 text-center shadow-xl">
           <HomeTitle onHome={handleRestart}>Quiz Maker</HomeTitle>
           <p className="mt-0 text-sm m-0 font-medium text-primary-foreground/90">
@@ -388,11 +388,11 @@ function App() {
           </p>
         </header>
 
-        <main className="flex-1 py-6 px-4 max-w-6xl w-full mx-auto">
+        <main className="flex-1 pt-6 pb-20 px-4 max-w-6xl w-full mx-auto">
           <QuizSummary summary={generateSummary()} onRestart={handleRestart} elapsedTime={isSequential ? '—' : formattedTime} />
         </main>
 
-        <footer className="bg-white py-3 px-4 text-center text-gray-600 text-xs border-t-2 border-gray-200 shadow-inner">
+        <footer className="bg-card py-3 px-4 text-center text-muted-foreground text-xs border-t-2 border-border shadow-inner">
           <p className="m-0 font-medium">Built with React + TypeScript + Vite + Tailwind CSS</p>
         </footer>
       </div>
@@ -400,7 +400,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-background to-muted">
       {/* Question screen: "Question x of y" on the left, title in the middle, Previous/Next on
           the right. On phones the buttons show only their arrows so all three fit in one row. */}
       <header className="bg-primary py-2 px-3 sm:px-6 shadow-xl grid grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-4">
@@ -450,7 +450,7 @@ function App() {
         </div>
       </header>
 
-      <main className="flex-1 py-6 px-4 max-w-6xl w-full mx-auto">
+      <main className="flex-1 pt-6 pb-20 px-4 max-w-6xl w-full mx-auto">
         <div className={isSequential ? 'flex flex-col lg:flex-row gap-6 lg:items-start' : undefined}>
         <div className={isSequential ? 'flex-1 min-w-0' : undefined}>
         <QuestionCard
