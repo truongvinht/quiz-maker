@@ -8,7 +8,8 @@ interface ResultPanelProps {
 }
 
 export default function ResultPanel({ isCorrect, explanation, correctAnswers }: ResultPanelProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
+  // A wrong answer opens the explanation right away; a correct one stays collapsed.
+  const [isExpanded, setIsExpanded] = useState(!isCorrect);
 
   return (
     <Card
