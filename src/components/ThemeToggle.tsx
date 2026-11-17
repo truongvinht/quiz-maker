@@ -21,7 +21,7 @@ export default function ThemeToggle() {
       onClick={cycle}
       aria-label={LABELS[preference]}
       title={LABELS[preference]}
-      className="fixed bottom-4 right-4 z-50 flex h-12 w-12 items-center justify-center rounded-full border border-border bg-card text-xl text-foreground shadow-lg hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="fixed top-3 left-3 z-50 flex h-10 w-10 items-center justify-center rounded-full border border-border bg-card text-lg text-foreground shadow-lg hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <span aria-hidden="true">{ICONS[preference]}</span>
     </button>

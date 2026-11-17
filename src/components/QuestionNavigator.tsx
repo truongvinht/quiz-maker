@@ -18,8 +18,7 @@ interface QuestionNavigatorProps {
   onViewResults: () => void; // button only rendered when every question is answered
 }
 
-const TOP_OFFSET_PX = 16; // sticky top-4 offset
-const BOTTOM_MARGIN_PX = TOP_OFFSET_PX + 64; // also clears the fixed theme button (bottom-4, ~40px)
+const BOTTOM_MARGIN_PX = 16; // gap kept below the card (the sticky top offset is lg:top-16 in App.tsx)
 const MIN_CARD_HEIGHT_PX = 240; // keep header, a few rows and the buttons usable in tiny windows
 
 const STATUS_CLASSES: Record<SquareStatus, string> = {

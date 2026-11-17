@@ -337,7 +337,7 @@ function App() {
   if (!selectedTopic) {
     return (
       <div className="min-h-screen flex flex-col bg-gradient-to-br from-background to-muted">
-        <main className="flex-1 pt-6 pb-20 px-4">
+        <main className="flex-1 py-6 px-4">
           <TopicSelection topics={quizTopics} onTopicSelect={handleTopicSelect} />
         </main>
         <footer className="bg-card py-3 px-4 text-center text-muted-foreground text-xs border-t-2 border-border shadow-inner">
@@ -362,13 +362,13 @@ function App() {
   if (isLoading || questions.length === 0) {
     return (
       <div className="min-h-screen flex flex-col bg-gradient-to-br from-background to-muted">
-        <header className="bg-header py-2 px-6 text-center shadow-xl">
+        <header className="bg-header py-2 px-16 text-center shadow-xl">
           <HomeTitle onHome={handleRestart}>Quiz Maker</HomeTitle>
           <p className="mt-0 text-sm m-0 font-medium text-header-foreground/90">
             {selectedTopic.name}
           </p>
         </header>
-        <main className="flex-1 pt-6 pb-20 px-4 flex items-center justify-center">
+        <main className="flex-1 py-6 px-4 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
             <p className="text-lg text-muted-foreground">Loading questions...</p>
@@ -381,14 +381,14 @@ function App() {
   if (quizCompleted) {
     return (
       <div className="min-h-screen flex flex-col bg-gradient-to-br from-background to-muted">
-        <header className="bg-header py-2 px-6 text-center shadow-xl">
+        <header className="bg-header py-2 px-16 text-center shadow-xl">
           <HomeTitle onHome={handleRestart}>Quiz Maker</HomeTitle>
           <p className="mt-0 text-sm m-0 font-medium text-header-foreground/90">
             {selectedTopic.name}
           </p>
         </header>
 
-        <main className="flex-1 pt-6 pb-20 px-4 max-w-6xl w-full mx-auto">
+        <main className="flex-1 py-6 px-4 max-w-6xl w-full mx-auto">
           <QuizSummary summary={generateSummary()} onRestart={handleRestart} elapsedTime={isSequential ? '—' : formattedTime} />
         </main>
 
@@ -403,7 +403,7 @@ function App() {
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-background to-muted">
       {/* Question screen: "Question x of y" on the left, title in the middle, Previous/Next on
           the right. On phones the buttons show only their arrows so all three fit in one row. */}
-      <header className="bg-header py-2 px-3 sm:px-6 shadow-xl grid grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-4">
+      <header className="bg-header py-2 pl-16 pr-3 sm:pr-6 shadow-xl grid grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-4">
         <p className="m-0 justify-self-start text-sm sm:text-lg font-bold text-header-foreground">
           Question{' '}
           <span className="whitespace-nowrap">
@@ -450,7 +450,7 @@ function App() {
         </div>
       </header>
 
-      <main className="flex-1 pt-6 pb-20 px-4 max-w-6xl w-full mx-auto">
+      <main className="flex-1 py-6 px-4 max-w-6xl w-full mx-auto">
         <div className={isSequential ? 'flex flex-col lg:flex-row gap-6 lg:items-start' : undefined}>
         <div className={isSequential ? 'flex-1 min-w-0' : undefined}>
         <QuestionCard
@@ -470,7 +470,7 @@ function App() {
         />
         </div>
         {isSequential && (
-          <aside className="lg:sticky lg:top-4 lg:w-64 lg:shrink-0 lg:self-start">
+          <aside className="lg:sticky lg:top-16 lg:w-64 lg:shrink-0 lg:self-start">
             <QuestionNavigator
               questions={questions}
               currentIndex={currentQuestionIndex}

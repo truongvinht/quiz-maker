@@ -53,14 +53,14 @@ export default function QuizConfiguration({ topic, onStart, onBack }: QuizConfig
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-background to-muted">
-      <header className="bg-header py-2 px-6 text-center shadow-xl">
+      <header className="bg-header py-2 px-16 text-center shadow-xl">
         <HomeTitle onHome={onBack}>Quiz Configuration</HomeTitle>
         <p className="mt-0 text-sm m-0 font-medium text-header-foreground/90">
           {topic.icon} {topic.name}
         </p>
       </header>
 
-      <main className="flex-1 pt-6 pb-20 px-4 flex items-center justify-center">
+      <main className="flex-1 py-6 px-4 flex items-center justify-center">
         <Card className="w-full max-w-2xl shadow-2xl">
           <CardHeader className="text-center pb-4">
             <CardTitle className="text-2xl md:text-3xl font-bold text-foreground">
