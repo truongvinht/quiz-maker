@@ -9,6 +9,8 @@
   --card-foreground: #0a0a0a;
   --primary: #1976d2;
   --primary-foreground: #fafafa;
+  --header: #1976d2;
+  --header-foreground: #fafafa;
   --primary-dark: #115293;
   --secondary: #f5f5f5;
   --secondary-foreground: #171717;
@@ -36,8 +38,10 @@
   --foreground: #f1f5f9;
   --card: #1e293b;
   --card-foreground: #f1f5f9;
-  --primary: #0d3b75;
-  --primary-foreground: #f8fafc;
+  --primary: #60a5fa;
+  --header: #0d3b75;
+  --header-foreground: #f8fafc;
+  --primary-foreground: #0f172a;
   --primary-dark: #0a2d5a;
   --secondary: #334155;
   --secondary-foreground: #f1f5f9;
@@ -67,6 +71,8 @@
   --color-card-foreground: var(--card-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-header: var(--header);
+  --color-header-foreground: var(--header-foreground);
   --color-primary-dark: var(--primary-dark);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);

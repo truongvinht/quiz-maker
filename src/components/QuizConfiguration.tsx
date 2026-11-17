@@ -53,9 +53,9 @@ export default function QuizConfiguration({ topic, onStart, onBack }: QuizConfig
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-background to-muted">
-      <header className="bg-primary py-2 px-6 text-center shadow-xl">
+      <header className="bg-header py-2 px-6 text-center shadow-xl">
         <HomeTitle onHome={onBack}>Quiz Configuration</HomeTitle>
-        <p className="mt-0 text-sm m-0 font-medium text-primary-foreground/90">
+        <p className="mt-0 text-sm m-0 font-medium text-header-foreground/90">
           {topic.icon} {topic.name}
         </p>
       </header>

@@ -18,7 +18,8 @@ interface QuestionNavigatorProps {
   onViewResults: () => void; // button only rendered when every question is answered
 }
 
-const WINDOW_MARGIN_PX = 16; // gap kept below the card, matches the sticky top-4 offset
+const TOP_OFFSET_PX = 16; // sticky top-4 offset
+const BOTTOM_MARGIN_PX = TOP_OFFSET_PX + 64; // also clears the fixed theme button (bottom-4, ~40px)
 const MIN_CARD_HEIGHT_PX = 240; // keep header, a few rows and the buttons usable in tiny windows
 
 const STATUS_CLASSES: Record<SquareStatus, string> = {
@@ -72,7 +73,7 @@ export default function QuestionNavigator({
         card.style.maxHeight = '';
         return;
       }
-      const room = window.innerHeight - card.getBoundingClientRect().top - WINDOW_MARGIN_PX;
+      const room = window.innerHeight - card.getBoundingClientRect().top - BOTTOM_MARGIN_PX;
       card.style.maxHeight = `${Math.max(room, MIN_CARD_HEIGHT_PX)}px`;
     };
     const schedule = () => {
@@ -133,7 +134,7 @@ export default function QuestionNavigator({
                   onClick={() => onJump(index)}
                   className={`flex aspect-square items-center justify-center rounded-md border text-sm font-medium transition-colors ${
                     STATUS_CLASSES[status]
-                  } ${isCurrent ? 'ring-2 ring-blue-600 ring-offset-1' : ''}`}
+                  } ${isCurrent ? 'ring-2 ring-selected ring-offset-1 ring-offset-background' : ''}`}
                 >
                   {index + 1}
                 </button>
