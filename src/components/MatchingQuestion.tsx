@@ -9,6 +9,8 @@ interface MatchingQuestionProps {
   onSubmit: (selectedAnswers: Map<number, string>, isCorrect: boolean) => void;
   disabled?: boolean;
   initialAnswers?: Map<number, string>;
+  examMode?: boolean;
+  onChange?: (answers: Map<number, string>) => void;
 }
 
 export default function MatchingQuestion({
@@ -16,25 +18,26 @@ export default function MatchingQuestion({
   matchingOptions,
   onSubmit,
   disabled = false,
-  initialAnswers
+  initialAnswers,
+  examMode = false,
+  onChange
 }: MatchingQuestionProps) {
   const [selectedAnswers, setSelectedAnswers] = useState<Map<number, string>>(
     () => new Map(initialAnswers ?? [])
   );
-  const [submitted, setSubmitted] = useState(initialAnswers !== undefined);
+  const [submitted, setSubmitted] = useState(!examMode && initialAnswers !== undefined);
 
   const handleScenarioChange = (scenarioId: number, value: string) => {
     if (submitted) return;
 
-    setSelectedAnswers((prev) => {
-      const newMap = new Map(prev);
-      if (value === '') {
-        newMap.delete(scenarioId);
-      } else {
-        newMap.set(scenarioId, value);
-      }
-      return newMap;
-    });
+    const newMap = new Map(selectedAnswers);
+    if (value === '') {
+      newMap.delete(scenarioId);
+    } else {
+      newMap.set(scenarioId, value);
+    }
+    setSelectedAnswers(newMap);
+    onChange?.(new Map(newMap));
   };
 
   const handleSubmit = () => {
@@ -151,7 +154,7 @@ export default function MatchingQuestion({
 
       {/* Action buttons */}
       <div className="flex gap-3 pt-2">
-        {!submitted && (
+        {!examMode && !submitted && (
           <Button
             onClick={handleSubmit}
             disabled={!allScenariosSelected || disabled}

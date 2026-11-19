@@ -10,6 +10,8 @@ interface OrderingQuestionProps {
   disabled?: boolean;
   initialAnswers?: Map<number, string>;
   allowRetry?: boolean;
+  examMode?: boolean;
+  onChange?: (answers: Map<number, string>) => void;
 }
 
 export default function OrderingQuestion({
@@ -17,25 +19,26 @@ export default function OrderingQuestion({
   onSubmit,
   disabled = false,
   initialAnswers,
-  allowRetry = true
+  allowRetry = true,
+  examMode = false,
+  onChange
 }: OrderingQuestionProps) {
   const [selectedAnswers, setSelectedAnswers] = useState<Map<number, string>>(
     () => new Map(initialAnswers ?? [])
   );
-  const [submitted, setSubmitted] = useState(initialAnswers !== undefined);
+  const [submitted, setSubmitted] = useState(!examMode && initialAnswers !== undefined);
 
   const handleStepChange = (stepNumber: number, value: string) => {
     if (submitted) return;
 
-    setSelectedAnswers((prev) => {
-      const newMap = new Map(prev);
-      if (value === '') {
-        newMap.delete(stepNumber);
-      } else {
-        newMap.set(stepNumber, value);
-      }
-      return newMap;
-    });
+    const newMap = new Map(selectedAnswers);
+    if (value === '') {
+      newMap.delete(stepNumber);
+    } else {
+      newMap.set(stepNumber, value);
+    }
+    setSelectedAnswers(newMap);
+    onChange?.(new Map(newMap));
   };
 
   const handleSubmit = () => {
@@ -160,7 +163,7 @@ export default function OrderingQuestion({
 
       {/* Action buttons */}
       <div className="flex gap-3 pt-2">
-        {!submitted ? (
+        {examMode ? null : !submitted ? (
           <Button
             onClick={handleSubmit}
             disabled={!allStepsSelected || disabled}
