@@ -14,7 +14,7 @@ interface QuizConfigurationProps {
 export default function QuizConfiguration({ topic, onStart, onBack }: QuizConfigurationProps) {
   const [startQuestion, setStartQuestion] = useState(1);
   const [questionCount, setQuestionCount] = useState(Math.min(30, topic.questionCount));
-  const [mode, setMode] = useState<QuizMode>('training');
+  const [mode, setMode] = useState<QuizMode>('sequential');
 
   const maxQuestions = topic.questionCount - startQuestion + 1;
   const endQuestion = startQuestion + questionCount - 1;
@@ -86,6 +86,29 @@ export default function QuizConfiguration({ topic, onStart, onBack }: QuizConfig
                 Quiz Mode
               </label>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {/* Sequential Mode */}
+                <button
+                  type="button"
+                  onClick={() => setMode('sequential')}
+                  className={`relative flex flex-col items-start p-4 border-2 rounded-lg transition-all ${
+                    mode === 'sequential'
+                      ? 'border-primary bg-primary/10 shadow-md'
+                      : 'border-border hover:border-muted-foreground bg-card'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className={`w-6 h-6 rounded-full transition-all ${
+                      mode === 'sequential'
+                        ? 'bg-primary border-2 border-primary'
+                        : 'border-2 border-border bg-card'
+                    }`}></div>
+                    <span className="font-bold text-base">Sequential Mode</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground text-left">
+                    All questions in order — your progress is saved in this browser
+                  </p>
+                </button>
+
                 {/* Training Mode */}
                 <button
                   type="button"
@@ -129,29 +152,6 @@ export default function QuizConfiguration({ topic, onStart, onBack }: QuizConfig
                   </div>
                   <p className="text-sm text-muted-foreground text-left">
                     Answer all questions first, then review results at the end
-                  </p>
-                </button>
-
-                {/* Sequential Mode */}
-                <button
-                  type="button"
-                  onClick={() => setMode('sequential')}
-                  className={`relative flex flex-col items-start p-4 border-2 rounded-lg transition-all ${
-                    mode === 'sequential'
-                      ? 'border-primary bg-primary/10 shadow-md'
-                      : 'border-border hover:border-muted-foreground bg-card'
-                  }`}
-                >
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className={`w-6 h-6 rounded-full transition-all ${
-                      mode === 'sequential'
-                        ? 'bg-primary border-2 border-primary'
-                        : 'border-2 border-border bg-card'
-                    }`}></div>
-                    <span className="font-bold text-base">Sequential Mode</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground text-left">
-                    All questions in order — your progress is saved in this browser
                   </p>
                 </button>
               </div>
