@@ -50,7 +50,7 @@
   - `withoutSelectedStrikes(struck: ReadonlyMap<string, ReadonlySet<string>>, questionId: string, selectedIds: readonly string[]): Map<string, Set<string>>` — removes the selected option ids from that question's strikes (drops an emptied entry); returns the same contents when nothing changes.
   - `loadNavigatorMinimized(storage: ProgressStorage | null = defaultStorage()): boolean` / `saveNavigatorMinimized(value: boolean, storage = defaultStorage()): void` (reuse `ProgressStorage`, `defaultStorage` from `sequentialProgress.ts`).
 
-- [ ] **Step 1: Write failing tests** in `src/lib/examState.test.ts`:
+- [x] **Step 1: Write failing tests** in `src/lib/examState.test.ts`:
   - `isSelectionEmpty`: `undefined`, `[]`, `new Map()` → true; `['a']`, `new Map([[1,'x']])` → false.
   - `withSavedSelection`: sets `['b']`; `undefined` leaves `{q1:['a']}` unchanged and returns a different Map instance; `[]` on `{q1:['a']}` removes `q1`; partial `Map([[2,'x']])` is stored; stored value is a copy (mutating the input afterwards doesn't change it).
   - `toggleFlag`: adds then removes; input set not mutated.
@@ -59,10 +59,10 @@
   - `examCounts`: 3 questions, answers `{q1:['a'], q2:[]}`, flags `{q2, zz}` → `{total:3, answered:1, unanswered:2, flagged:1}`.
   - `submitConfirmMessage(3,2)` → `Submit the exam and see your results? 3 unanswered, 2 flagged.`; `(0,2)` → `… results? 2 flagged.`; `(1,0)` → `… results? 1 unanswered.`; `(0,0)` → `Submit the exam and see your results?`
   - Preference: fake storage round-trips `true`/`false`; key is `quiz-maker:navigator-minimized`; storage whose `getItem`/`setItem` throw → load returns `false`, save doesn't throw; `null` storage → `false`.
-- [ ] **Step 2: Run** `npx vitest run src/lib/examState.test.ts` → FAIL (module missing).
-- [ ] **Step 3: Implement** `src/lib/examState.ts` with the signatures above.
-- [ ] **Step 4: Run** `npx vitest run` → all PASS.
-- [ ] **Step 5: Commit** (lint first).
+- [x] **Step 2: Run** `npx vitest run src/lib/examState.test.ts` → FAIL (module missing).
+- [x] **Step 3: Implement** `src/lib/examState.ts` with the signatures above.
+- [x] **Step 4: Run** `npx vitest run` → all PASS.
+- [x] **Step 5: Commit** (lint first).
 
 ### Task 2: F key
 
@@ -72,9 +72,9 @@
 **Interfaces:**
 - Produces: `ShortcutAction` gains `{ type: 'flag' }`; `resolveShortcut` maps `f`/`F` (no modifiers, not while typing) to it.
 
-- [ ] **Step 1: Add failing tests**: `f` → `{type:'flag'}`; `F` (key `'F'`, shiftKey false) → flag; `f` with ctrlKey → null; `f` in a text input → null.
-- [ ] **Step 2: Run** → FAIL. **Step 3: Implement.** **Step 4: Run** `npx vitest run` → PASS (existing callers ignore unknown action types; check `QuestionCard`'s handler only reacts to `option`).
-- [ ] **Step 5: Commit.**
+- [x] **Step 1: Add failing tests**: `f` → `{type:'flag'}`; `F` (key `'F'`, shiftKey false) → flag; `f` with ctrlKey → null; `f` in a text input → null.
+- [x] **Step 2: Run** → FAIL. **Step 3: Implement.** **Step 4: Run** `npx vitest run` → PASS (existing callers ignore unknown action types; check `QuestionCard`'s handler only reacts to `option`).
+- [x] **Step 5: Commit.**
 
 ### Task 3: Exam variant of matching and ordering questions
 
@@ -87,9 +87,9 @@
   - `onChange` is called with a copy of the answer map after every change (also when a step is cleared), in any mode.
   - `examMode` false/omitted: behaviour unchanged.
 
-- [ ] **Step 1: Implement** both components.
-- [ ] **Step 2: Verify** `npx tsc -b`, `npx vitest run`, lint → clean. (UI checked in Task 7.)
-- [ ] **Step 3: Commit.**
+- [x] **Step 1: Implement** both components.
+- [x] **Step 2: Verify** `npx tsc -b`, `npx vitest run`, lint → clean. (UI checked in Task 7.)
+- [x] **Step 3: Commit.**
 
 ### Task 4: QuestionCard and AnswerOption in Exam Mode
 
@@ -107,10 +107,10 @@
 - `AnswerOption` gains optional `struck?: boolean` and `onToggleStrike?: (optionId: string) => void`. When `onToggleStrike` is given, a small button at the row's right end (`aria-label="Strike out option {label}"` / `"Undo strike-out of option {label}"`, `aria-pressed={struck}`) toggles it; its click and Enter/Space must not select the option (stop propagation). `struck` shows the option text with `line-through` and reduced opacity. While the option is selected the strike button is disabled (a selected option is never shown struck).
 - `QuestionCard` gains optional `struckOptionIds?: ReadonlySet<string>` and `onToggleStrike?: (optionId: string) => void`, passed to `AnswerOption` only in Exam Mode for standard questions.
 
-- [ ] **Step 0: Strike-out**: implement the `AnswerOption` and `QuestionCard` props above.
-- [ ] **Step 1: Matching/ordering in Exam Mode**: pass `examMode`, `onChange`, and `initialAnswers = previousSelection` when it is a `Map` (locked selection keeps priority in Sequential). Render the same exam button as standard questions (`📝 Submit Exam` on the last question, else `Next Question →`) calling `onNext`.
-- [ ] **Step 2: Standard questions**: `handleExamNext` → just `onNext()`.
-- [ ] **Step 3: Verify** tsc, tests, lint → clean. **Step 4: Commit.**
+- [x] **Step 0: Strike-out**: implement the `AnswerOption` and `QuestionCard` props above.
+- [x] **Step 1: Matching/ordering in Exam Mode**: pass `examMode`, `onChange`, and `initialAnswers = previousSelection` when it is a `Map` (locked selection keeps priority in Sequential). Render the same exam button as standard questions (`📝 Submit Exam` on the last question, else `Next Question →`) calling `onNext`.
+- [x] **Step 2: Standard questions**: `handleExamNext` → just `onNext()`.
+- [x] **Step 3: Verify** tsc, tests, lint → clean. **Step 4: Commit.**
 
 ### Task 5: Mode-agnostic QuestionNavigator
 
@@ -138,9 +138,9 @@
   - When `onToggleMinimized` is given: a `–` button (`aria-label="Minimize question grid"`) in the header on large screens; when `minimized`, large screens show only a slim `Questions ▸` button (`aria-label="Show question grid"`, `aria-expanded=false`) that calls `onToggleMinimized`. Small screens keep the existing `Questions ▾` toggle and ignore `minimized`.
   - Keep the sticky/fit-height and keep-current-square-visible effects working (re-run the fit when un-minimising).
 
-- [ ] **Step 1: Rework the component** to the props above.
-- [ ] **Step 2: Update the Sequential call site** in `src/App.tsx`: `getSquare` from `squareStatus` with label `Question {n}, {status}`; `summary` = today's `{answered} / {total} answered · {correct} ✓ · {wrong} ✗`; `actions` = today's `View results` (only when all answered) and `Reset progress` buttons with today's classes. No minimise props.
-- [ ] **Step 3: Verify** tsc, tests, lint → clean; `git diff` shows Sequential classes/texts unchanged. **Step 4: Commit.**
+- [x] **Step 1: Rework the component** to the props above.
+- [x] **Step 2: Update the Sequential call site** in `src/App.tsx`: `getSquare` from `squareStatus` with label `Question {n}, {status}`; `summary` = today's `{answered} / {total} answered · {correct} ✓ · {wrong} ✗`; `actions` = today's `View results` (only when all answered) and `Reset progress` buttons with today's classes. No minimise props.
+- [x] **Step 3: Verify** tsc, tests, lint → clean; `git diff` shows Sequential classes/texts unchanged. **Step 4: Commit.**
 
 ### Task 6: Exam wiring in App
 
@@ -150,13 +150,13 @@
 **Interfaces:**
 - Consumes: Tasks 1, 2, 4, 5.
 
-- [ ] **Step 1: State**: `flaggedIds: Set<string>`; `navigatorMinimized` initialised from `loadNavigatorMinimized()`; live selection ref widened to `ExamSelection | undefined` (fed by the card's `onSelectionChange`). Restart / leaving clears flags and the live ref.
-- [ ] **Step 2: One "save, then go" path** for Exam Mode: `saveLive(): Map<string, ExamSelection>` (merges via `withSavedSelection`, sets state, returns the merged map) and `goTo(index)`. Use it for header Previous/Next, A/D, grid squares and the card's Next. Training/Sequential keep their current handlers.
-- [ ] **Step 3: Submit**: `requestSubmit()` = `saveLive()` → `examCounts` on the returned map → `window.confirm(submitConfirmMessage(...))` → OK: `handleExamSubmit(map)` (takes the map as a parameter, no stale state); Cancel: nothing. The card's Next on the last question and the grid's `Submit exam` call it. D on the last question still does nothing.
-- [ ] **Step 3b: Strike-out**: `struckOptions: Map<string, Set<string>>` state, updated with `toggleStrike`; whenever the current standard question's live selection changes, apply `withoutSelectedStrikes` so a newly selected option loses its strike; pass `struckOptionIds={struckOptions.get(currentQuestion.id)}` and `onToggleStrike` to the card in Exam Mode only; cleared on submit, restart and leaving.
-- [ ] **Step 4: Flag**: header toggle left of Previous/Next in Exam Mode only (`HEADER_NAV_BUTTON_CLASSES` + pressed look; `aria-pressed`; text `Flag` / `Flagged` on `sm+`, ⚑ only on phones); F key in the shortcut handler (Exam Mode only).
-- [ ] **Step 5: Grid**: render `QuestionNavigator` in Exam Mode in the same aside as Sequential (layout wrapper applies to both modes); `getSquare` = answered (stored entry or, for the current question, non-empty live selection) / unanswered + flagged, labels per Global Constraints; `summary` per Global Constraints; `actions` = `Submit exam` button; minimise props wired to state + `saveNavigatorMinimized`. Aside width `lg:w-64` when open, narrow when minimised.
-- [ ] **Step 6: Verify** `npx tsc -b`, `npx vitest run`, lint, `npm run build` → clean. **Step 7: Commit.**
+- [x] **Step 1: State**: `flaggedIds: Set<string>`; `navigatorMinimized` initialised from `loadNavigatorMinimized()`; live selection ref widened to `ExamSelection | undefined` (fed by the card's `onSelectionChange`). Restart / leaving clears flags and the live ref.
+- [x] **Step 2: One "save, then go" path** for Exam Mode: `saveLive(): Map<string, ExamSelection>` (merges via `withSavedSelection`, sets state, returns the merged map) and `goTo(index)`. Use it for header Previous/Next, A/D, grid squares and the card's Next. Training/Sequential keep their current handlers.
+- [x] **Step 3: Submit**: `requestSubmit()` = `saveLive()` → `examCounts` on the returned map → `window.confirm(submitConfirmMessage(...))` → OK: `handleExamSubmit(map)` (takes the map as a parameter, no stale state); Cancel: nothing. The card's Next on the last question and the grid's `Submit exam` call it. D on the last question still does nothing.
+- [x] **Step 3b: Strike-out**: `struckOptions: Map<string, Set<string>>` state, updated with `toggleStrike`; whenever the current standard question's live selection changes, apply `withoutSelectedStrikes` so a newly selected option loses its strike; pass `struckOptionIds={struckOptions.get(currentQuestion.id)}` and `onToggleStrike` to the card in Exam Mode only; cleared on submit, restart and leaving.
+- [x] **Step 4: Flag**: header toggle left of Previous/Next in Exam Mode only (`HEADER_NAV_BUTTON_CLASSES` + pressed look; `aria-pressed`; text `Flag` / `Flagged` on `sm+`, ⚑ only on phones); F key in the shortcut handler (Exam Mode only).
+- [x] **Step 5: Grid**: render `QuestionNavigator` in Exam Mode in the same aside as Sequential (layout wrapper applies to both modes); `getSquare` = answered (stored entry or, for the current question, non-empty live selection) / unanswered + flagged, labels per Global Constraints; `summary` per Global Constraints; `actions` = `Submit exam` button; minimise props wired to state + `saveNavigatorMinimized`. Aside width `lg:w-64` when open, narrow when minimised.
+- [x] **Step 6: Verify** `npx tsc -b`, `npx vitest run`, lint, `npm run build` → clean. **Step 7: Commit.**
 
 ### Task 7: Manual check in the browser
 
