@@ -22,13 +22,33 @@ import {
   type SequentialProgress,
 } from './lib/sequentialProgress';
 import { useKeyboardShortcut } from './lib/keyboardShortcuts';
-import { withSavedSelection, type ExamSelection } from './lib/examState';
+import {
+  withSavedSelection,
+  toggleFlag,
+  examCounts,
+  submitConfirmMessage,
+  toggleStrike,
+  withoutSelectedStrikes,
+  isSelectionEmpty,
+  loadNavigatorMinimized,
+  saveNavigatorMinimized,
+  type ExamSelection,
+} from './lib/examState';
 import { Button } from '@/components/ui/button';
 import type { QuizResult, QuizSummary as QuizSummaryType, Question, QuizTopic, QuizConfig, QuizMode } from './types/quiz';
 
 // Previous/Next in the dark question-screen header: light outline instead of the default white fill.
 const HEADER_NAV_BUTTON_CLASSES =
   'bg-transparent border-header-foreground/40 text-header-foreground hover:bg-header-foreground/10 hover:text-header-foreground px-3 sm:px-4';
+// Pressed look of the header Flag toggle (Exam Mode)
+const HEADER_FLAG_PRESSED_CLASSES =
+  'bg-header-foreground/20 border-header-foreground hover:bg-header-foreground/25';
+
+// Exam mode: the current card's live selection, tagged with the question it belongs to
+interface LiveExamSelection {
+  questionId: string;
+  selection: ExamSelection;
+}
 
 function App() {
   const [selectedTopic, setSelectedTopic] = useState<QuizTopic | null>(null);
@@ -48,11 +68,41 @@ function App() {
   // The question whose answer completed the bank; its card offers "View Results"
   const [completedOnQuestionId, setCompletedOnQuestionId] = useState<string | null>(null);
 
-  // Exam mode: the current card's live selection, saved when D moves on
-  const liveExamSelection = useRef<ExamSelection | undefined>(undefined);
-  const handleExamSelectionChange = useCallback((selected: ExamSelection) => {
-    liveExamSelection.current = selected;
-  }, []);
+  // Exam mode: flags and strike-outs live for one attempt; the grid minimise choice is remembered
+  const [flaggedIds, setFlaggedIds] = useState<Set<string>>(() => new Set());
+  const [struckOptions, setStruckOptions] = useState<Map<string, Set<string>>>(() => new Map());
+  const [navigatorMinimized, setNavigatorMinimized] = useState(() => loadNavigatorMinimized());
+
+  // Exam mode: the current card's live selection, saved whenever the question is left.
+  // The ref is read by event handlers; the state copy re-renders the grid as the pick changes.
+  const liveExamSelection = useRef<LiveExamSelection | undefined>(undefined);
+  const [liveExamState, setLiveExamState] = useState<LiveExamSelection | undefined>(undefined);
+  const currentQuestionId = questions[currentQuestionIndex]?.id;
+  const handleExamSelectionChange = useCallback(
+    (selection: ExamSelection) => {
+      if (currentQuestionId === undefined) return;
+      const live = { questionId: currentQuestionId, selection };
+      liveExamSelection.current = live;
+      setLiveExamState(live);
+      // A newly selected option loses its strike
+      if (Array.isArray(selection) && selection.length > 0) {
+        setStruckOptions((prev) => {
+          const struck = prev.get(currentQuestionId);
+          return struck && selection.some((id) => struck.has(id))
+            ? withoutSelectedStrikes(prev, currentQuestionId, selection)
+            : prev;
+        });
+      }
+    },
+    [currentQuestionId],
+  );
+
+  const clearExamState = () => {
+    setFlaggedIds(new Set());
+    setStruckOptions(new Map());
+    liveExamSelection.current = undefined;
+    setLiveExamState(undefined);
+  };
 
   const { formattedTime, reset: resetTimer } = useTimer(quizStarted && !quizCompleted);
 
@@ -182,48 +232,83 @@ function App() {
 
     setUserAnswers(validatedAnswers);
     setQuizCompleted(true);
+    clearExamState();
+  };
+
+  const isExam = quizMode === 'exam';
+
+  // Exam mode: merge the current question's live selection into the saved answers
+  // and return the merged map (callers use it directly, never the stale state)
+  const saveLive = (): Map<string, ExamSelection> => {
+    const live = liveExamSelection.current;
+    const merged = withSavedSelection(
+      selectedAnswers,
+      currentQuestion.id,
+      live?.questionId === currentQuestion.id ? live.selection : undefined,
+    );
+    setSelectedAnswers(merged);
+    return merged;
+  };
+
+  // The one "save, then go" path: every way of leaving a question goes through here
+  const goTo = (index: number) => {
+    if (isExam) saveLive();
+    setCurrentQuestionIndex(index);
+  };
+
+  // Exam mode: always ask before submitting; Cancel keeps the current question as it is
+  const requestSubmit = () => {
+    const answers = saveLive();
+    const { unanswered, flagged } = examCounts(questions, answers, flaggedIds);
+    if (window.confirm(submitConfirmMessage(unanswered, flagged))) {
+      handleExamSubmit(answers);
+    }
   };
 
   const handleNext = () => {
-    // Exam mode: save the live selection before moving on or submitting
-    const examAnswers =
-      quizMode === 'exam'
-        ? withSavedSelection(selectedAnswers, currentQuestion.id, liveExamSelection.current)
-        : selectedAnswers;
-    if (quizMode === 'exam') setSelectedAnswers(examAnswers);
     if (currentQuestionIndex < totalQuestions - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      goTo(currentQuestionIndex + 1);
+    } else if (isExam) {
+      requestSubmit();
     } else {
-      // Quiz completed
-      if (quizMode === 'exam') {
-        handleExamSubmit(examAnswers);
-      } else {
-        setQuizCompleted(true);
-      }
+      setQuizCompleted(true);
     }
   };
 
   const handlePrevious = () => {
     if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(currentQuestionIndex - 1);
+      goTo(currentQuestionIndex - 1);
     }
   };
 
-  // A/D navigation in all modes; option keys are handled by QuestionCard.
+  const handleToggleFlag = () => {
+    if (!isExam || !currentQuestion) return;
+    setFlaggedIds((prev) => toggleFlag(prev, currentQuestion.id));
+  };
+
+  const handleToggleStrike = (optionId: string) => {
+    const questionId = currentQuestion.id;
+    setStruckOptions((prev) => toggleStrike(prev, questionId, optionId));
+  };
+
+  const handleToggleNavigatorMinimized = () => {
+    const next = !navigatorMinimized;
+    setNavigatorMinimized(next);
+    saveNavigatorMinimized(next);
+  };
+
+  // A/D navigation in all modes, F flag in Exam Mode; option keys are handled by QuestionCard.
   // Must stay above every early return (hooks rule).
   useKeyboardShortcut((action) => {
     if (action.type === 'prev') {
       handlePrevious();
     } else if (action.type === 'next') {
+      // D on the last question does nothing (never submits)
       if (currentQuestionIndex < questions.length - 1) {
-        // Exam mode: save the selection first, like the card's own Next button does
-        if (quizMode === 'exam') {
-          const questionId = currentQuestion.id;
-          const live = liveExamSelection.current;
-          setSelectedAnswers((prev) => withSavedSelection(prev, questionId, live));
-        }
-        setCurrentQuestionIndex(currentQuestionIndex + 1);
+        goTo(currentQuestionIndex + 1);
       }
+    } else if (action.type === 'flag') {
+      handleToggleFlag();
     }
   }, questionScreenActive);
 
@@ -231,6 +316,7 @@ function App() {
     setCurrentQuestionIndex(0);
     setUserAnswers(new Map());
     setSelectedAnswers(new Map());
+    clearExamState();
     setQuizCompleted(false);
     setSequentialProgress({}); // in-memory only; storage is kept
     setCompletedOnQuestionId(null);
@@ -407,6 +493,16 @@ function App() {
     );
   }
 
+  // Exam grid: for the current question the live selection counts, so its square
+  // updates as soon as something is picked or cleared
+  const isExamAnswered = (questionId: string) =>
+    liveExamState?.questionId === questionId && questionId === currentQuestion.id
+      ? !isSelectionEmpty(liveExamState.selection)
+      : !isSelectionEmpty(selectedAnswers.get(questionId));
+  const examAnsweredCount = isExam ? questions.filter((q) => isExamAnswered(q.id)).length : 0;
+  const flaggedCount = isExam ? questions.filter((q) => flaggedIds.has(q.id)).length : 0;
+  const hasNavigator = isSequential || isExam;
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-background to-muted">
       {/* Question screen: "Question x of y" on the left, title in the middle, Previous/Next on
@@ -435,6 +531,20 @@ function App() {
           )}
         </div>
         <div className="flex justify-self-end gap-2 sm:gap-3">
+          {isExam && (
+            <Button
+              variant="outline"
+              onClick={handleToggleFlag}
+              aria-pressed={flaggedIds.has(currentQuestion.id)}
+              className={`${HEADER_NAV_BUTTON_CLASSES} ${
+                flaggedIds.has(currentQuestion.id) ? HEADER_FLAG_PRESSED_CLASSES : ''
+              }`}
+              aria-label="Flag question"
+            >
+              <span aria-hidden="true">⚑</span>
+              <span className="hidden sm:inline">{flaggedIds.has(currentQuestion.id) ? 'Flagged' : 'Flag'}</span>
+            </Button>
+          )}
           <Button
             variant="outline"
             onClick={handlePrevious}
@@ -459,8 +569,8 @@ function App() {
       </header>
 
       <main className="flex-1 py-6 px-4 max-w-6xl w-full mx-auto">
-        <div className={isSequential ? 'flex flex-col lg:flex-row gap-6 lg:items-start' : undefined}>
-        <div className={isSequential ? 'flex-1 min-w-0' : undefined}>
+        <div className={hasNavigator ? 'flex flex-col lg:flex-row gap-6 lg:items-start' : undefined}>
+        <div className={hasNavigator ? 'flex-1 min-w-0' : undefined}>
         <QuestionCard
           key={`${currentQuestion.id}:${resetGeneration}`}
           question={currentQuestion}
@@ -475,6 +585,8 @@ function App() {
               ? fromStoredSelection(sequentialProgress[currentQuestion.id].selection)
               : undefined
           }
+          struckOptionIds={isExam ? struckOptions.get(currentQuestion.id) : undefined}
+          onToggleStrike={isExam ? handleToggleStrike : undefined}
         />
         </div>
         {isSequential && (
@@ -505,6 +617,34 @@ function App() {
                 </>
               }
               onJump={setCurrentQuestionIndex}
+            />
+          </aside>
+        )}
+        {isExam && (
+          <aside
+            className={`lg:sticky lg:top-16 lg:shrink-0 lg:self-start ${navigatorMinimized ? 'lg:w-auto' : 'lg:w-64'}`}
+          >
+            <QuestionNavigator
+              questions={questions}
+              currentIndex={currentQuestionIndex}
+              getSquare={(q, index) => {
+                const answered = isExamAnswered(q.id);
+                const flagged = flaggedIds.has(q.id);
+                return {
+                  tone: answered ? 'answered' : 'unanswered',
+                  flagged,
+                  label: `Question ${index + 1}, ${answered ? 'answered' : 'unanswered'}${flagged ? ', flagged' : ''}`,
+                };
+              }}
+              summary={`${examAnsweredCount} / ${totalQuestions} answered · ${flaggedCount} ⚑`}
+              actions={
+                <Button type="button" className="w-full shrink-0" onClick={requestSubmit}>
+                  Submit exam
+                </Button>
+              }
+              onJump={goTo}
+              minimized={navigatorMinimized}
+              onToggleMinimized={handleToggleNavigatorMinimized}
             />
           </aside>
         )}
