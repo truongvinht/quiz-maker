@@ -16,6 +16,7 @@ import {
   toStoredSelection,
   fromStoredSelection,
   progressCounts,
+  squareStatus,
   isAnswered,
   findDuplicateIds,
   type SequentialProgress,
@@ -253,8 +254,8 @@ function App() {
     setSelectedTopic(null);
   };
 
-  const allSequentialAnswered =
-    isSequential && progressCounts(questions, sequentialProgress).answered === totalQuestions;
+  const counts = progressCounts(questions, sequentialProgress);
+  const allSequentialAnswered = isSequential && counts.answered === totalQuestions;
 
   const handleSequentialNext = () => {
     if (allSequentialAnswered) {
@@ -481,10 +482,29 @@ function App() {
             <QuestionNavigator
               questions={questions}
               currentIndex={currentQuestionIndex}
-              progress={sequentialProgress}
+              getSquare={(q, index) => {
+                const status = squareStatus(sequentialProgress, q.id);
+                return { tone: status, label: `Question ${index + 1}, ${status}` };
+              }}
+              summary={`${counts.answered} / ${counts.total} answered · ${counts.correct} ✓ · ${counts.wrong} ✗`}
+              actions={
+                <>
+                  {counts.total > 0 && counts.answered === counts.total && (
+                    <Button type="button" className="w-full shrink-0" onClick={() => setQuizCompleted(true)}>
+                      View results
+                    </Button>
+                  )}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full shrink-0 border-incorrect text-incorrect-foreground hover:bg-incorrect-light hover:text-incorrect-foreground"
+                    onClick={handleSequentialReset}
+                  >
+                    Reset progress
+                  </Button>
+                </>
+              }
               onJump={setCurrentQuestionIndex}
-              onReset={handleSequentialReset}
-              onViewResults={() => setQuizCompleted(true)}
             />
           </aside>
         )}

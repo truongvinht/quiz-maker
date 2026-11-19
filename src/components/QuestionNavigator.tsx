@@ -1,28 +1,33 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { Question } from '@/types/quiz';
-import {
-  progressCounts,
-  squareStatus,
-  type SequentialProgress,
-  type SquareStatus,
-} from '@/lib/sequentialProgress';
+
+export type SquareTone = 'unanswered' | 'answered' | 'correct' | 'wrong';
+
+export interface NavigatorSquare {
+  tone: SquareTone;
+  flagged?: boolean;
+  label: string; // aria-label of the square
+}
 
 interface QuestionNavigatorProps {
   questions: Question[];
   currentIndex: number;
-  progress: SequentialProgress;
+  getSquare: (question: Question, index: number) => NavigatorSquare;
+  summary: string;
+  actions: ReactNode; // buttons under the grid
   onJump: (index: number) => void;
-  onReset: () => void; // caller handles the confirm prompt
-  onViewResults: () => void; // button only rendered when every question is answered
+  minimized?: boolean; // large screens only; omit = not minimisable
+  onToggleMinimized?: () => void;
 }
 
 const BOTTOM_MARGIN_PX = 16; // gap kept below the card (the sticky top offset is lg:top-16 in App.tsx)
 const MIN_CARD_HEIGHT_PX = 240; // keep header, a few rows and the buttons usable in tiny windows
 
-const STATUS_CLASSES: Record<SquareStatus, string> = {
+const STATUS_CLASSES: Record<SquareTone, string> = {
   unanswered: 'bg-card text-foreground border-border hover:bg-muted',
+  answered: 'bg-muted-foreground text-background border-muted-foreground',
   correct: 'bg-correct text-white dark:text-background border-correct',
   wrong: 'bg-incorrect text-white dark:text-background border-incorrect',
 };
@@ -30,16 +35,16 @@ const STATUS_CLASSES: Record<SquareStatus, string> = {
 export default function QuestionNavigator({
   questions,
   currentIndex,
-  progress,
+  getSquare,
+  summary,
+  actions,
   onJump,
-  onReset,
-  onViewResults,
+  minimized = false,
+  onToggleMinimized,
 }: QuestionNavigatorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const gridRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
-  const { total, answered, correct, wrong } = progressCounts(questions, progress);
-  const showViewResults = total > 0 && answered === total;
 
   // Keep the current square visible inside the grid. Only the grid's own scrollTop is
   // set (scrollIntoView could also scroll the window), so the page never jumps.
@@ -56,7 +61,7 @@ export default function QuestionNavigator({
     } else if (bottom > grid.scrollTop + grid.clientHeight) {
       grid.scrollTop = bottom - grid.clientHeight;
     }
-  }, [currentIndex, isOpen]);
+  }, [currentIndex, isOpen, minimized]);
 
   // Large screens: cap the card at the space between its top edge and the bottom of the
   // window, so it fills the window without being cut off before it sticks. The page scrolls
@@ -88,7 +93,7 @@ export default function QuestionNavigator({
       window.removeEventListener('resize', schedule);
       largeScreen.removeEventListener('change', schedule);
     };
-  }, []);
+  }, [minimized]); // re-fit when the grid is shown again
 
   return (
     <div>
@@ -103,16 +108,44 @@ export default function QuestionNavigator({
         Questions ▾
       </Button>
 
+      {onToggleMinimized && minimized && (
+        <Button
+          type="button"
+          variant="outline"
+          className="hidden w-full lg:flex"
+          aria-label="Show question grid"
+          aria-expanded={false}
+          aria-controls="question-navigator-panel"
+          onClick={onToggleMinimized}
+        >
+          Questions ▸
+        </Button>
+      )}
+
       <Card
         ref={cardRef}
         id="question-navigator-panel"
-        className={`mt-2 lg:mt-0 lg:flex lg:flex-col ${isOpen ? 'block' : 'hidden'}`}
+        className={`mt-2 lg:mt-0 ${minimized ? 'lg:hidden' : 'lg:flex lg:flex-col'} ${
+          isOpen ? 'block' : 'hidden'
+        }`}
       >
         <CardHeader className="shrink-0 pb-3">
-          <CardTitle className="text-base">Questions</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            {answered} / {total} answered · {correct} ✓ · {wrong} ✗
-          </p>
+          <div className="flex items-center justify-between gap-2">
+            <CardTitle className="text-base">Questions</CardTitle>
+            {onToggleMinimized && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="hidden h-6 px-2 lg:inline-flex"
+                aria-label="Minimize question grid"
+                onClick={onToggleMinimized}
+              >
+                –
+              </Button>
+            )}
+          </div>
+          <p className="text-sm text-muted-foreground">{summary}</p>
         </CardHeader>
         {/* On large screens the card is capped to the window (see the effect above): header and
             buttons keep their size and the grid takes the rest, scrolling only when needed. */}
@@ -122,39 +155,31 @@ export default function QuestionNavigator({
             className="grid max-h-[60vh] min-h-0 grid-cols-5 content-start gap-2 overflow-y-auto p-1 lg:max-h-none lg:flex-auto"
           >
             {questions.map((q, index) => {
-              const status = squareStatus(progress, q.id);
+              const square = getSquare(q, index);
               const isCurrent = index === currentIndex;
               return (
                 <button
                   key={q.id}
                   type="button"
-                  aria-label={`Question ${index + 1}, ${status}`}
+                  aria-label={square.label}
                   aria-current={isCurrent ? 'true' : undefined}
                   onClick={() => onJump(index)}
-                  className={`flex aspect-square items-center justify-center rounded-md border text-sm font-medium transition-colors ${
-                    STATUS_CLASSES[status]
+                  className={`relative flex aspect-square items-center justify-center rounded-md border text-sm font-medium transition-colors ${
+                    STATUS_CLASSES[square.tone]
                   } ${isCurrent ? 'ring-2 ring-selected ring-offset-1 ring-offset-background' : ''}`}
                 >
                   {index + 1}
+                  {square.flagged && (
+                    <span aria-hidden="true" className="absolute right-0.5 top-0 text-[10px] leading-none">
+                      ⚑
+                    </span>
+                  )}
                 </button>
               );
             })}
           </div>
 
-          {showViewResults && (
-            <Button type="button" className="w-full shrink-0" onClick={onViewResults}>
-              View results
-            </Button>
-          )}
-
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full shrink-0 border-incorrect text-incorrect-foreground hover:bg-incorrect-light hover:text-incorrect-foreground"
-            onClick={onReset}
-          >
-            Reset progress
-          </Button>
+          {actions}
         </CardContent>
       </Card>
     </div>
