@@ -180,9 +180,17 @@ describe('navigator minimized preference', () => {
   it('round-trips true and false under the expected key', () => {
     const storage = memoryStorage();
     saveNavigatorMinimized(true, storage);
-    expect(storage.data.get('quiz-maker:navigator-minimized')).toBeDefined();
+    expect(storage.data.get('quiz-maker:navigator-minimized')).toBe('1');
     expect(loadNavigatorMinimized(storage)).toBe(true);
     saveNavigatorMinimized(false, storage);
+    expect(storage.data.get('quiz-maker:navigator-minimized')).toBe('0');
+    expect(loadNavigatorMinimized(storage)).toBe(false);
+  });
+  it('loads a pre-seeded "1" as true and other values as false', () => {
+    const storage = memoryStorage();
+    storage.data.set('quiz-maker:navigator-minimized', '1');
+    expect(loadNavigatorMinimized(storage)).toBe(true);
+    storage.data.set('quiz-maker:navigator-minimized', 'true');
     expect(loadNavigatorMinimized(storage)).toBe(false);
   });
   it('falls back to false when storage throws or is missing', () => {

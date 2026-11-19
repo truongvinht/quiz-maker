@@ -93,7 +93,7 @@ export function loadNavigatorMinimized(
 ): boolean {
   if (!storage) return false;
   try {
-    return storage.getItem(NAVIGATOR_MINIMIZED_KEY) === 'true';
+    return storage.getItem(NAVIGATOR_MINIMIZED_KEY) === '1';
   } catch {
     return false;
   }
@@ -104,7 +104,7 @@ export function saveNavigatorMinimized(
   storage: ProgressStorage | null = defaultStorage(),
 ): void {
   try {
-    storage?.setItem(NAVIGATOR_MINIMIZED_KEY, value ? 'true' : 'false');
+    storage?.setItem(NAVIGATOR_MINIMIZED_KEY, value ? '1' : '0');
   } catch {
     // best effort
   }
