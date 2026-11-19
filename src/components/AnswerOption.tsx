@@ -7,6 +7,9 @@ interface AnswerOptionProps {
   isMultipleChoice: boolean;
   disabled: boolean;
   onSelect: (optionId: string) => void;
+  /** Exam mode: option is struck out (visual aid only). */
+  struck?: boolean;
+  onToggleStrike?: (optionId: string) => void;
 }
 
 export default function AnswerOption({
@@ -16,6 +19,8 @@ export default function AnswerOption({
   isMultipleChoice,
   disabled,
   onSelect,
+  struck = false,
+  onToggleStrike,
 }: AnswerOptionProps) {
   const getClassName = () => {
     let className = 'flex items-start p-5 my-3 border-2 rounded-xl transition-all duration-300 ease-in-out';
@@ -49,6 +54,9 @@ export default function AnswerOption({
     return className;
   };
 
+  // A selected option is never shown struck
+  const showStruck = struck && !isSelected;
+
   return (
     <div
       className={getClassName()}
@@ -75,8 +83,28 @@ export default function AnswerOption({
         aria-hidden="true"
       />
       <label className="flex items-start cursor-pointer w-full pointer-events-none">
-        <span className="text-foreground leading-relaxed flex-1 text-base">{option.text}</span>
+        <span
+          className={`text-foreground leading-relaxed flex-1 text-base${showStruck ? ' line-through opacity-50' : ''}`}
+        >
+          {option.text}
+        </span>
       </label>
+      {onToggleStrike && (
+        <button
+          type="button"
+          className="ml-3 flex-shrink-0 rounded-md border border-border px-2 py-1 text-xs text-muted-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
+          aria-label={`${struck ? 'Undo strike-out of option' : 'Strike out option'} ${option.label}`}
+          aria-pressed={struck}
+          disabled={isSelected || disabled}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleStrike(option.id);
+          }}
+          onKeyDown={(e) => e.stopPropagation()}
+        >
+          <s>ab</s>
+        </button>
+      )}
     </div>
   );
 }

@@ -21,6 +21,7 @@ import {
   type SequentialProgress,
 } from './lib/sequentialProgress';
 import { useKeyboardShortcut } from './lib/keyboardShortcuts';
+import { withSavedSelection, type ExamSelection } from './lib/examState';
 import { Button } from '@/components/ui/button';
 import type { QuizResult, QuizSummary as QuizSummaryType, Question, QuizTopic, QuizConfig, QuizMode } from './types/quiz';
 
@@ -47,8 +48,8 @@ function App() {
   const [completedOnQuestionId, setCompletedOnQuestionId] = useState<string | null>(null);
 
   // Exam mode: the current card's live selection, saved when D moves on
-  const liveExamSelection = useRef<string[]>([]);
-  const handleExamSelectionChange = useCallback((selected: string[]) => {
+  const liveExamSelection = useRef<ExamSelection | undefined>(undefined);
+  const handleExamSelectionChange = useCallback((selected: ExamSelection) => {
     liveExamSelection.current = selected;
   }, []);
 
@@ -167,14 +168,14 @@ function App() {
     setUserAnswers((prev) => new Map(prev).set(currentQuestion.id, result));
   };
 
-  const handleExamSubmit = () => {
+  const handleExamSubmit = (answers: Map<string, ExamSelection>) => {
     // Validate all answers and populate userAnswers Map
     const validatedAnswers = new Map<string, QuizResult>();
 
     questions.forEach((question) => {
       validatedAnswers.set(
         question.id,
-        buildQuizResult(question, selectedAnswers.get(question.id))
+        buildQuizResult(question, answers.get(question.id))
       );
     });
 
@@ -183,12 +184,18 @@ function App() {
   };
 
   const handleNext = () => {
+    // Exam mode: save the live selection before moving on or submitting
+    const examAnswers =
+      quizMode === 'exam'
+        ? withSavedSelection(selectedAnswers, currentQuestion.id, liveExamSelection.current)
+        : selectedAnswers;
+    if (quizMode === 'exam') setSelectedAnswers(examAnswers);
     if (currentQuestionIndex < totalQuestions - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
       // Quiz completed
       if (quizMode === 'exam') {
-        handleExamSubmit();
+        handleExamSubmit(examAnswers);
       } else {
         setQuizCompleted(true);
       }
@@ -209,10 +216,10 @@ function App() {
     } else if (action.type === 'next') {
       if (currentQuestionIndex < questions.length - 1) {
         // Exam mode: save the selection first, like the card's own Next button does
-        if (quizMode === 'exam' && liveExamSelection.current.length > 0) {
-          const selection = [...liveExamSelection.current];
+        if (quizMode === 'exam') {
           const questionId = currentQuestion.id;
-          setSelectedAnswers((prev) => new Map(prev).set(questionId, selection));
+          const live = liveExamSelection.current;
+          setSelectedAnswers((prev) => withSavedSelection(prev, questionId, live));
         }
         setCurrentQuestionIndex(currentQuestionIndex + 1);
       }

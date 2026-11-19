@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import type { ExamSelection } from '../lib/examState';
 
 interface QuestionCardProps {
   question: Question;
@@ -19,8 +20,11 @@ interface QuestionCardProps {
   mode?: QuizMode;
   previousSelection?: string[] | Map<number, string>;
   lockedSelection?: string[] | Map<number, string>;
-  /** Exam mode: reports the live standard-question selection so the parent can save it when the D key moves on. */
-  onSelectionChange?: (selectedOptions: string[]) => void;
+  /** Exam mode: reports the live selection (any question type) so the parent can save it when moving on. */
+  onSelectionChange?: (selection: ExamSelection) => void;
+  /** Exam mode: option ids struck out on this question (standard questions only). */
+  struckOptionIds?: ReadonlySet<string>;
+  onToggleStrike?: (optionId: string) => void;
 }
 
 export default function QuestionCard({
@@ -31,7 +35,9 @@ export default function QuestionCard({
   mode = 'training',
   previousSelection,
   lockedSelection,
-  onSelectionChange
+  onSelectionChange,
+  struckOptionIds,
+  onToggleStrike
 }: QuestionCardProps) {
   const checksImmediately = mode !== 'exam';
   const isLocked = lockedSelection !== undefined;
@@ -53,12 +59,26 @@ export default function QuestionCard({
     lockedSelection instanceof Map ? lockedSelection : undefined,
   );
 
-  useEffect(() => {
-    if (mode === 'exam') onSelectionChange?.(selectedOptions);
-  }, [mode, selectedOptions, onSelectionChange]);
-
   const isOrderingQuestion = question.questionType === 'ordering';
   const isMatchingQuestion = question.questionType === 'matching';
+  const isMapQuestion = isOrderingQuestion || isMatchingQuestion;
+  const isExam = mode === 'exam';
+  // Locked selection (sequential) keeps priority over an exam-restored one
+  const mapInitialAnswers =
+    lockedSelection instanceof Map
+      ? lockedSelection
+      : isExam && previousSelection instanceof Map
+        ? previousSelection
+        : undefined;
+  // Exam mode: live ordering/matching answer, reported to the parent like the standard selection
+  const [examMapSelection, setExamMapSelection] = useState<Map<number, string>>(
+    () => new Map(mapInitialAnswers ?? []),
+  );
+
+  useEffect(() => {
+    if (!isExam) return;
+    onSelectionChange?.(isMapQuestion ? examMapSelection : selectedOptions);
+  }, [isExam, isMapQuestion, selectedOptions, examMapSelection, onSelectionChange]);
 
   // Handle ordering question submission
   const handleOrderingSubmit = (selectedAnswers: Map<number, string>, isCorrect: boolean) => {
@@ -67,13 +87,8 @@ export default function QuestionCard({
       onAnswerSubmit(selectedAnswers, isCorrect);
     }
 
-    // Check immediately in training and sequential mode
-    if (checksImmediately) {
-      setSubmitted(true);
-    } else if (onNext) {
-      // In exam mode, automatically move to next question
-      onNext();
-    }
+    // Exam mode never submits these types here; the exam button just moves on
+    setSubmitted(true);
   };
 
   // Handle matching question submission
@@ -83,13 +98,8 @@ export default function QuestionCard({
       onAnswerSubmit(selectedAnswers, isCorrect);
     }
 
-    // Check immediately in training and sequential mode
-    if (checksImmediately) {
-      setSubmitted(true);
-    } else if (onNext) {
-      // In exam mode, automatically move to next question
-      onNext();
-    }
+    // Exam mode never submits these types here; the exam button just moves on
+    setSubmitted(true);
   };
 
   const handleOptionSelect = (optionId: string) => {
@@ -133,23 +143,19 @@ export default function QuestionCard({
     if (option) handleOptionSelect(option.id);
   }, !isOrderingQuestion && !isMatchingQuestion && !submitted);
 
-  const handleExamNext = () => {
-    // In exam mode, save selection and move to next question
-    if (selectedOptions.length > 0) {
-      const correct =
-        selectedOptions.length === (question.correctAnswers?.length || 0) &&
-        selectedOptions.every((id) => question.correctAnswers?.includes(id));
-
-      if (onAnswerSubmit) {
-        onAnswerSubmit(selectedOptions, correct);
-      }
-    }
-
-    if (onNext) {
-      onNext();
-    }
-  };
-
+  // Exam mode: the parent saves the live selection (via onSelectionChange) and moves on
+  const examButton = (
+    <div className="flex gap-3 pt-2">
+      <Button
+        size="default"
+        className="flex-1 sm:flex-none h-9 transition-all hover:scale-105"
+        onClick={() => onNext?.()}
+        aria-label={isLastQuestion ? 'Submit Exam' : 'Next Question'}
+      >
+        {isLastQuestion ? '📝 Submit Exam' : 'Next Question →'}
+      </Button>
+    </div>
+  );
 
   const isCorrect =
     submitted &&
@@ -232,9 +238,13 @@ export default function QuestionCard({
               steps={question.steps}
               onSubmit={handleOrderingSubmit}
               disabled={submitted}
-              initialAnswers={isLocked && lockedSelection instanceof Map ? lockedSelection : undefined}
+              initialAnswers={mapInitialAnswers}
               allowRetry={mode !== 'sequential'}
+              examMode={isExam}
+              onChange={isExam ? setExamMapSelection : undefined}
             />
+
+            {isExam && examButton}
 
             {/* Next button for ordering questions - only show in training mode after submission */}
             {checksImmediately && submitted && onNext && (
@@ -267,8 +277,12 @@ export default function QuestionCard({
               matchingOptions={question.matchingOptions}
               onSubmit={handleMatchingSubmit}
               disabled={submitted}
-              initialAnswers={isLocked && lockedSelection instanceof Map ? lockedSelection : undefined}
+              initialAnswers={mapInitialAnswers}
+              examMode={isExam}
+              onChange={isExam ? setExamMapSelection : undefined}
             />
+
+            {isExam && examButton}
 
             {/* Next button for matching questions - only show in training mode after submission */}
             {checksImmediately && submitted && onNext && (
@@ -310,6 +324,8 @@ export default function QuestionCard({
                     isMultipleChoice={question.isMultipleChoice}
                     disabled={submitted}
                     onSelect={handleOptionSelect}
+                    struck={isExam && (struckOptionIds?.has(option.id) ?? false)}
+                    onToggleStrike={isExam ? onToggleStrike : undefined}
                   />
                 );
               })}
@@ -322,7 +338,7 @@ export default function QuestionCard({
                 <Button
                   size="default"
                   className="flex-1 sm:flex-none h-9 transition-all hover:scale-105"
-                  onClick={handleExamNext}
+                  onClick={() => onNext?.()}
                   aria-label={isLastQuestion ? "Submit Exam" : "Next Question"}
                 >
                   {isLastQuestion ? '📝 Submit Exam' : 'Next Question →'}
