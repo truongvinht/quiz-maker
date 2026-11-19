@@ -139,6 +139,8 @@ export default function QuestionNavigator({
                 size="sm"
                 className="hidden h-6 px-2 lg:inline-flex"
                 aria-label="Minimize question grid"
+                aria-expanded={true}
+                aria-controls="question-navigator-panel"
                 onClick={onToggleMinimized}
               >
                 –

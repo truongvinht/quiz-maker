@@ -332,45 +332,34 @@ export default function QuestionCard({
             </div>
 
             {/* Action buttons */}
-            <div className="flex gap-3">
-              {mode === 'exam' ? (
-                // Exam mode: Show Next/Submit button directly
-                <Button
-                  size="default"
-                  className="flex-1 sm:flex-none h-9 transition-all hover:scale-105"
-                  onClick={() => onNext?.()}
-                  aria-label={isLastQuestion ? "Submit Exam" : "Next Question"}
-                >
-                  {isLastQuestion ? '📝 Submit Exam' : 'Next Question →'}
-                </Button>
-              ) : (
-                // Training mode: Show Check Answer then Next
-                <>
-                  {!submitted ? (
+            {isExam ? (
+              examButton
+            ) : (
+              <div className="flex gap-3">
+                {!submitted ? (
+                  <Button
+                    size="default"
+                    className="flex-1 sm:flex-none h-9 hover:shadow-xl transition-all"
+                    onClick={handleSubmit}
+                    disabled={selectedOptions.length === 0}
+                    aria-label="Submit your answer"
+                  >
+                    {selectedOptions.length === 0 ? 'Select an answer' : 'Check Answer →'}
+                  </Button>
+                ) : (
+                  onNext && (
                     <Button
                       size="default"
-                      className="flex-1 sm:flex-none h-9 hover:shadow-xl transition-all"
-                      onClick={handleSubmit}
-                      disabled={selectedOptions.length === 0}
-                      aria-label="Submit your answer"
+                      className="flex-1 sm:flex-none h-9 transition-all hover:scale-105"
+                      onClick={onNext}
+                      aria-label={isLastQuestion ? "View Results" : "Next Question"}
                     >
-                      {selectedOptions.length === 0 ? 'Select an answer' : 'Check Answer →'}
+                      {isLastQuestion ? '📊 View Results' : 'Next Question →'}
                     </Button>
-                  ) : (
-                    onNext && (
-                      <Button
-                        size="default"
-                        className="flex-1 sm:flex-none h-9 transition-all hover:scale-105"
-                        onClick={onNext}
-                        aria-label={isLastQuestion ? "View Results" : "Next Question"}
-                      >
-                        {isLastQuestion ? '📊 View Results' : 'Next Question →'}
-                      </Button>
-                    )
-                  )}
-                </>
-              )}
-            </div>
+                  )
+                )}
+              </div>
+            )}
 
             {/* Result panel - only show in training mode */}
             {checksImmediately && submitted && (

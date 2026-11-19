@@ -100,7 +100,9 @@ export default function AnswerOption({
             e.stopPropagation();
             onToggleStrike(option.id);
           }}
-          onKeyDown={(e) => e.stopPropagation()}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') e.stopPropagation();
+          }}
         >
           <s>ab</s>
         </button>

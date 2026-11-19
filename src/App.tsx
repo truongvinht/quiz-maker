@@ -166,12 +166,6 @@ function App() {
       return;
     }
 
-    // In exam mode, just store the selection without validation
-    if (quizMode === 'exam') {
-      setSelectedAnswers((prev) => new Map(prev).set(currentQuestion.id, selectedOptions));
-      return;
-    }
-
     // Training mode: immediate validation and feedback
     const isOrderingQuestion = currentQuestion.questionType === 'ordering';
 
