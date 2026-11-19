@@ -19,6 +19,13 @@ describe('resolveShortcut', () => {
     expect(resolveShortcut(ev({ key: 'A' }))).toEqual({ type: 'prev' });
   });
 
+  it('maps f/F (no modifiers, not typing) to flag', () => {
+    expect(resolveShortcut(ev({ key: 'f' }))).toEqual({ type: 'flag' });
+    expect(resolveShortcut(ev({ key: 'F', shiftKey: false }))).toEqual({ type: 'flag' });
+    expect(resolveShortcut(ev({ key: 'f', ctrlKey: true }))).toBeNull();
+    expect(resolveShortcut(ev({ key: 'f', target: { tagName: 'INPUT', type: 'text' } }))).toBeNull();
+  });
+
   it('maps digits 1-9 to zero-based option indexes', () => {
     expect(resolveShortcut(ev({ key: '1' }))).toEqual({ type: 'option', index: 0 });
     expect(resolveShortcut(ev({ key: '9' }))).toEqual({ type: 'option', index: 8 });

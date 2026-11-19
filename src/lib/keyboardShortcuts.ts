@@ -12,6 +12,7 @@ export interface ShortcutEventLike {
 export type ShortcutAction =
   | { type: 'prev' }
   | { type: 'next' }
+  | { type: 'flag' }
   | { type: 'option'; index: number }
   | null;
 
@@ -34,6 +35,7 @@ export const resolveShortcut = (e: ShortcutEventLike): ShortcutAction => {
   const key = e.key.toLowerCase();
   if (key === 'a') return { type: 'prev' };
   if (key === 'd') return { type: 'next' };
+  if (key === 'f') return { type: 'flag' };
   if (/^[1-9]$/.test(key)) return { type: 'option', index: Number(key) - 1 };
   return null;
 };
