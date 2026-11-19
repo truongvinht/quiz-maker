@@ -14,6 +14,7 @@ which are flagged. They want Exam Mode to work the same way, so practice feels l
 - A question grid in Exam Mode, like Sequential Mode's, showing answered / unanswered / flagged.
   It can be minimised.
 - Submitting the exam always asks for confirmation first.
+- Strike out answer options the user has ruled out (visual only), remembered until submit.
 
 ## Non-goals
 
@@ -127,6 +128,19 @@ They must behave like standard questions in an exam:
   last-question submit goes through the confirmation. Cancel leaves the question as it was,
   editable.
 - Training and Sequential Mode behaviour of these components stays exactly as today.
+
+### Strike out answer options (owner, added 2026-11-20)
+
+- Exam Mode, standard questions: every answer option gets a small toggle at its right end
+  (`S̶` / "Strike" → "Undo"), to cross out an option the user has ruled out.
+- Purely visual: the option text is shown struck through and dimmed; the selection and scoring are
+  not affected. Clicking the toggle does not select the option.
+- Remembered per question for the whole exam attempt, so it is still visible after jumping away
+  and back; cleared when the exam is submitted or left.
+- Owner: selecting a struck option removes its strike (it shows unstruck), and a selected option
+  cannot be struck (its toggle is disabled while selected).
+- *Builder's calls, approved with this doc:* no keyboard shortcut; not shown on the results screen; not offered for matching /
+  ordering questions (their answers are dropdowns, not option rows).
 
 ### Sequential Mode
 
